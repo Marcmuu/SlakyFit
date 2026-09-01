@@ -4,6 +4,7 @@ import { exercises } from '../../data/exercises'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import { equipmentLabels } from '../../lib/equipmentLabels'
+import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import type { Muscle, Equipment } from '../../types'
 
 const muscles: Muscle[] = ['pecho', 'espalda', 'hombro', 'biceps', 'triceps', 'cuadriceps', 'isquios', 'gluteo', 'gemelos', 'core']
@@ -16,13 +17,12 @@ export default function Library() {
   const [query, setQuery] = useState('')
 
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
     return exercises.filter(
       (e) =>
-        e.section === 'main' &&
+        (e.section === 'main' || e.section === 'abs') &&
         (!muscle || e.mainMuscles.includes(muscle)) &&
         (!equipment || e.equipment === equipment) &&
-        (!q || e.name.toLowerCase().includes(q)),
+        matchesExerciseQuery(e, query),
     )
   }, [muscle, equipment, query])
 
@@ -33,7 +33,7 @@ export default function Library() {
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar ejercicio..."
+          placeholder="Buscar por nombre o músculo (ej. abs, pierna)..."
           className="w-full h-11 bg-base-800 border border-base-700 rounded-xl px-4 text-sm text-base-100"
         />
 

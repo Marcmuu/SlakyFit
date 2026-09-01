@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { exercises } from '../../data/exercises'
 import { equipmentLabels } from '../../lib/equipmentLabels'
+import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 
@@ -12,9 +13,8 @@ export default function AddExercise() {
   const [query, setQuery] = useState('')
 
   const results = useMemo(() => {
-    const q = query.trim().toLowerCase()
     return exercises
-      .filter((e) => (e.section === 'main' || e.section === 'abs') && (!q || e.name.toLowerCase().includes(q)))
+      .filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query))
       .slice(0, 40)
   }, [query])
 
@@ -44,7 +44,7 @@ export default function AddExercise() {
           autoFocus
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Buscar en la biblioteca..."
+          placeholder="Buscar por nombre o músculo (ej. abs, pierna)..."
           className="w-full h-11 bg-base-800 border border-base-700 rounded-xl px-4 text-sm text-base-100"
         />
         <div className="flex flex-col gap-2">

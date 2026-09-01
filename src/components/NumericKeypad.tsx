@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 
 interface NumericKeypadProps {
   open: boolean
@@ -30,6 +31,8 @@ export default function NumericKeypad({
   useEffect(() => {
     if (open) setText('')
   }, [open, initialValue])
+
+  useBodyScrollLock(open)
 
   if (!open) return null
 

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { exercises, getExercise } from '../../data/exercises'
 import { equipmentLabels } from '../../lib/equipmentLabels'
+import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 
@@ -21,8 +22,7 @@ export default function SwapExercise() {
 
   const libraryResults = useMemo(() => {
     if (!showLibrary) return []
-    const q = query.trim().toLowerCase()
-    return exercises.filter((e) => e.section === 'main' && (!q || e.name.toLowerCase().includes(q)) && e.id !== current?.id).slice(0, 30)
+    return exercises.filter((e) => e.section === 'main' && e.id !== current?.id && matchesExerciseQuery(e, query)).slice(0, 30)
   }, [query, showLibrary, current])
 
   if (!activeWorkout || !sessionEx || !current) {
@@ -76,7 +76,7 @@ export default function SwapExercise() {
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Buscar ejercicio..."
+              placeholder="Buscar por nombre o músculo..."
               className="w-full h-11 bg-base-800 border border-base-700 rounded-xl px-4 text-sm text-base-100"
             />
             <div className="flex flex-col gap-2">

@@ -5,6 +5,7 @@ import { getExercise } from '../../data/exercises'
 import { routineLists } from '../../data/routineLists'
 import { templateLabel } from '../../lib/categoryMeta'
 import { newId } from '../../lib/id'
+import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
 import type { SessionExercise, WorkoutSession } from '../../types'
@@ -14,6 +15,7 @@ export default function ActiveWorkout() {
   const navigate = useNavigate()
   const [showFinish, setShowFinish] = useState(false)
   const [notes, setNotes] = useState('')
+  useBodyScrollLock(showFinish)
 
   useEffect(() => {
     if (!activeWorkout) navigate('/train', { replace: true })
@@ -102,8 +104,13 @@ export default function ActiveWorkout() {
         {activeWorkout.exercises.map((sessionEx, index) => {
           const exercise = getExercise(sessionEx.exerciseId)!
           const done = sessionEx.sets.length
+          const started = done > 0
+          const completed = done >= sessionEx.targetSets
           return (
-            <Card key={`${sessionEx.exerciseId}-${index}`} className="p-3">
+            <Card
+              key={`${sessionEx.exerciseId}-${index}`}
+              className={`p-3 transition-colors ${started ? 'border-brand/50 bg-brand/5' : ''}`}
+            >
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
                   <button
@@ -121,13 +128,20 @@ export default function ActiveWorkout() {
                     ▼
                   </button>
                 </div>
+                {started && (
+                  <span className="w-5 h-5 rounded-full bg-brand text-base-950 flex items-center justify-center shrink-0" aria-hidden>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                )}
                 <button className="flex-1 min-w-0 text-left" onClick={() => navigate(`/train/session/exercise/${index}`)}>
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-base-100 truncate">{exercise.name}</span>
                     {sessionEx.isExtra && <span className="text-[10px] font-bold text-brand bg-brand/10 px-1.5 py-0.5 rounded-full shrink-0">EXTRA</span>}
                     {sessionEx.originalExerciseId && <span className="text-[10px] font-bold text-accent-pull bg-accent-pull/10 px-1.5 py-0.5 rounded-full shrink-0">SUSTITUIDO</span>}
                   </div>
-                  <p className="text-xs text-base-500 mt-0.5 tabular">
+                  <p className={`text-xs mt-0.5 tabular ${completed ? 'text-brand font-semibold' : started ? 'text-brand/80' : 'text-base-500'}`}>
                     {done}/{sessionEx.targetSets} series · {sessionEx.repMin}-{sessionEx.repMax} reps
                   </p>
                 </button>
