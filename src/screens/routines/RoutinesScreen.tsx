@@ -60,7 +60,7 @@ export default function RoutinesScreen() {
         {routines.map((routine) => {
           const isActive = routine.id === activeRoutineId
           return (
-            <Card key={routine.id} className={isActive ? 'border-brand/50 bg-brand/5' : ''}>
+            <Card key={routine.id} className={isActive ? '!border-brand/50 !bg-brand/5' : ''}>
               <button className="text-left w-full" onClick={() => navigate(`/routines/${routine.id}`)}>
                 <div className="flex items-center gap-2 mb-1">
                   <p className="font-bold text-base-100 flex-1">{routine.name}</p>

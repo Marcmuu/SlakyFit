@@ -48,7 +48,7 @@ export default function Dashboard() {
       </div>
 
       {activeWorkout && (
-        <Card className="border-brand/40 bg-brand/5">
+        <Card className="!border-brand/40 !bg-brand/5">
           <p className="text-sm text-brand font-semibold mb-1">Entrenamiento en curso</p>
           <p className="text-base-300 text-sm mb-3">Tienes {activeWorkout.dayName} sin terminar.</p>
           <Button className="w-full" onClick={() => navigate('/train/session')}>Continuar entrenamiento</Button>
@@ -92,7 +92,7 @@ export default function Dashboard() {
       </Card>
 
       {recentPR ? (
-        <Card className="bg-brand/5 border-brand/30">
+        <Card className="!bg-brand/5 !border-brand/30">
           <p className="text-xs text-brand font-semibold mb-1">Récord reciente</p>
           <p className="text-base-100 font-bold">
             {recentPR.exerciseName} · {recentPR.description}

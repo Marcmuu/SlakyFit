@@ -99,7 +99,7 @@ export default function ActiveWorkout() {
 
           if (completed) {
             return (
-              <Card key={`${sessionEx.exerciseId}-${index}`} className="p-0 border-brand/50 bg-brand/5 overflow-hidden">
+              <Card key={`${sessionEx.exerciseId}-${index}`} className="!p-0 !border-brand/50 !bg-brand/5 overflow-hidden">
                 <button className="w-full flex items-center gap-3 px-3 py-2.5" onClick={() => navigate(`/train/session/exercise/${index}`)}>
                   <span className="w-5 h-5 rounded-full bg-brand text-base-950 flex items-center justify-center shrink-0" aria-hidden>
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -118,7 +118,7 @@ export default function ActiveWorkout() {
           return (
             <Card
               key={`${sessionEx.exerciseId}-${index}`}
-              className={`p-3 transition-colors ${partial ? 'border-accent-warning/50 bg-accent-warning/5' : ''}`}
+              className={`p-3 transition-colors ${partial ? '!border-accent-warning/50 !bg-accent-warning/5' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
