@@ -1,14 +1,13 @@
-import type { RirValue } from '../types'
+import type { RirRange } from '../types'
 
-const options: { value: RirValue; label: string }[] = [
-  { value: 0, label: '0' },
-  { value: 1, label: '1' },
-  { value: 2, label: '2' },
-  { value: 3, label: '3' },
-  { value: 4, label: '4+' },
+const options: { value: RirRange; label: string }[] = [
+  { value: '0-1', label: '0-1' },
+  { value: '1-2', label: '1-2' },
+  { value: '2-3', label: '2-3' },
+  { value: '3+', label: '3+' },
 ]
 
-export default function RIRSelector({ value, onChange }: { value: RirValue; onChange: (v: RirValue) => void }) {
+export default function RIRSelector({ value, onChange }: { value: RirRange; onChange: (v: RirRange) => void }) {
   return (
     <div className="flex gap-2">
       {options.map((opt) => (

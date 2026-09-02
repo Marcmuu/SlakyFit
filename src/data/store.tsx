@@ -3,6 +3,7 @@ import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout,
 import { loadItem, saveItem, hasItem, STORAGE_KEYS } from './storage'
 import { generateDemoData } from './demoSeed'
 import { migrateRoutinesIfNeeded } from './migrateRoutines'
+import { migrateRirIfNeeded } from './migrateRir'
 
 interface AppStoreValue {
   sessions: WorkoutSession[]
@@ -41,6 +42,7 @@ function initializeSeed() {
 
 initializeSeed()
 migrateRoutinesIfNeeded()
+migrateRirIfNeeded()
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<WorkoutSession[]>(() => loadItem(STORAGE_KEYS.sessions, []))

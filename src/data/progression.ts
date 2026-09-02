@@ -1,4 +1,5 @@
 import type { WorkoutSession, SessionExercise, SetEntry, ExerciseType } from '../types'
+import { RIR_MIDPOINT } from '../lib/rir'
 
 export interface ExerciseHistoryEntry {
   date: string
@@ -74,28 +75,28 @@ export function recommendNextWeight(
 
   const weights = last.sets.map((s) => s.weight)
   const reps = last.sets.map((s) => s.reps)
-  const rirs: number[] = last.sets.map((s) => s.rir)
+  const rirMidpoints = last.sets.map((s) => RIR_MIDPOINT[s.rir])
   const lastWeight = weights[weights.length - 1]
   const allAtTop = reps.every((r) => r >= repMax)
   const allBelowMin = reps.every((r) => r < repMin)
-  const allZeroRir = rirs.every((r) => r === 0)
-  const avgRir = rirs.reduce((a, b) => a + b, 0) / rirs.length
+  const allNearFailure = last.sets.every((s) => s.rir === '0-1')
+  const avgRir = rirMidpoints.reduce((a, b) => a + b, 0) / rirMidpoints.length
 
-  if (allAtTop && !allZeroRir && avgRir >= rirTargetMin - 1) {
+  if (allAtTop && !allNearFailure && avgRir >= rirTargetMin - 1) {
     return {
       recommendedWeight: roundToIncrement(lastWeight + weightIncrement, weightIncrement),
       message: `Buen progreso en la sesión anterior. Sube a ${roundToIncrement(lastWeight + weightIncrement, weightIncrement)} kg e intenta mantener el rango.`,
     }
   }
 
-  if (allAtTop && allZeroRir) {
+  if (allAtTop && allNearFailure) {
     return {
       recommendedWeight: lastWeight,
-      message: `Completaste el rango pero al fallo (RIR 0). Mantén ${lastWeight} kg y busca terminar con algo más de margen antes de subir.`,
+      message: `Completaste el rango pero cerca del fallo (RIR 0-1). Mantén ${lastWeight} kg y busca terminar con algo más de margen antes de subir.`,
     }
   }
 
-  if (allBelowMin && allZeroRir) {
+  if (allBelowMin && allNearFailure) {
     const suggestedLow = roundToIncrement(lastWeight - weightIncrement, weightIncrement)
     return {
       recommendedWeight: suggestedLow,

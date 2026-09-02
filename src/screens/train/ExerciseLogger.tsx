@@ -12,7 +12,8 @@ import Stepper from '../../components/Stepper'
 import RIRSelector from '../../components/RIRSelector'
 import Button from '../../components/Button'
 import { formatWeight } from '../../lib/format'
-import type { RirValue, SetEntry } from '../../types'
+import { nearestRirRange } from '../../lib/rir'
+import type { RirRange, SetEntry } from '../../types'
 
 export default function ExerciseLogger() {
   const { index } = useParams()
@@ -43,11 +44,13 @@ export default function ExerciseLogger() {
     ? sessionEx.sets[sessionEx.sets.length - 1].weight
     : recommendation?.recommendedWeight ?? lastPerformance?.sets[0]?.weight ?? 20
   const defaultReps = sessionEx?.sets.length ? sessionEx.sets[sessionEx.sets.length - 1].reps : lastPerformance?.sets[0]?.reps ?? sessionEx?.repMin ?? 8
-  const defaultRir: RirValue = sessionEx?.sets.length ? sessionEx.sets[sessionEx.sets.length - 1].rir : (rirTarget ? (rirTarget[1] as RirValue) : 2)
+  const defaultRir: RirRange = sessionEx?.sets.length
+    ? sessionEx.sets[sessionEx.sets.length - 1].rir
+    : nearestRirRange(rirTarget ? (rirTarget[0] + rirTarget[1]) / 2 : 2)
 
   const [weight, setWeight] = useState(defaultWeight)
   const [reps, setReps] = useState(defaultReps)
-  const [rir, setRir] = useState<RirValue>(defaultRir)
+  const [rir, setRir] = useState<RirRange>(defaultRir)
 
   if (!activeWorkout || !sessionEx || !exercise) {
     return (

@@ -33,6 +33,7 @@ export const STORAGE_KEYS = {
   routines: 'routines',
   activeRoutineId: 'activeRoutineId',
   routinesMigratedV1: 'routines-migrated-v1',
+  rirMigratedV1: 'rir-migrated-v1',
 } as const
 
 const EXPORT_FORMAT = 'slakyfit-backup'

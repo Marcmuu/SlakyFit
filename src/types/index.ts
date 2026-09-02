@@ -64,12 +64,12 @@ export interface RoutineTemplate {
   items: RoutineItem[]
 }
 
-export type RirValue = 0 | 1 | 2 | 3 | 4
+export type RirRange = '0-1' | '1-2' | '2-3' | '3+'
 
 export interface SetEntry {
   weight: number
   reps: number
-  rir: RirValue
+  rir: RirRange
   isWarmup?: boolean
 }
 
