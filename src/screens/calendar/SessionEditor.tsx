@@ -7,18 +7,35 @@ import { equipmentLabels } from '../../lib/equipmentLabels'
 import { newId } from '../../lib/id'
 import { colorForDayIndex, readableTextColor } from '../../lib/color'
 import { todayIso } from '../../lib/format'
+import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
+import ActionSheet from '../../components/ActionSheet'
 import Stepper from '../../components/Stepper'
 import RIRSelector from '../../components/RIRSelector'
 import { describeSet } from '../../lib/setFormat'
-import type { Exercise, SessionExercise, SetEntry, WorkoutSession } from '../../types'
+import type { Exercise, RoutineDay, SessionExercise, SetEntry, WorkoutSession } from '../../types'
 
 function defaultSet(exercise: Exercise): SetEntry {
   if (exercise.logType === 'time') return { durationSec: exercise.defaultDurationSec ?? 30, rir: '2-3' }
   if (exercise.logType === 'bodyweight-reps') return { reps: 8, rir: '2-3' }
   return { weight: 20, reps: 8, rir: '2-3' }
+}
+
+function exercisesFromDay(day: RoutineDay): SessionExercise[] {
+  return day.exercises
+    .slice()
+    .sort((a, b) => a.order - b.order)
+    .map((item, i) => {
+      const exercise = getExercise(item.exerciseId)
+      return {
+        exerciseId: item.exerciseId,
+        order: i + 1,
+        isExtra: false,
+        sets: exercise ? Array.from({ length: Math.max(1, item.targetSets) }, () => defaultSet(exercise)) : [],
+      }
+    })
 }
 
 export default function SessionEditor() {
@@ -45,16 +62,32 @@ export default function SessionEditor() {
   const [expandedKey, setExpandedKey] = useState<string | null>(null)
   const [showPicker, setShowPicker] = useState(false)
   const [query, setQuery] = useState('')
+  const [freeform, setFreeform] = useState(!routines.length || Boolean(existing && !existing.routineId))
+  const [selectedRoutineId, setSelectedRoutineId] = useState<string | null>(session.routineId)
+  const [pendingDay, setPendingDay] = useState<{ routine: (typeof routines)[number]; day: RoutineDay } | null>(null)
 
-  const dayOptions = useMemo(() => {
-    const flat: { label: string; dayName: string; color: string }[] = []
-    for (const routine of routines) {
-      for (const day of routine.days) {
-        flat.push({ label: `${routine.name} · ${day.name}`, dayName: day.name, color: day.color })
-      }
+  const selectedRoutine = routines.find((r) => r.id === selectedRoutineId) ?? null
+  useBodyScrollLock(pendingDay !== null)
+
+  function chooseDay(routine: (typeof routines)[number], day: RoutineDay) {
+    if (session.exercises.length > 0) {
+      setPendingDay({ routine, day })
+      return
     }
-    return flat
-  }, [routines])
+    applyDay(routine, day)
+  }
+
+  function applyDay(routine: (typeof routines)[number], day: RoutineDay) {
+    setSession({
+      ...session,
+      routineId: routine.id,
+      dayId: day.id,
+      dayName: day.name,
+      dayColor: day.color,
+      exercises: exercisesFromDay(day),
+    })
+    setPendingDay(null)
+  }
 
   const searchResults = useMemo(() => {
     if (!showPicker) return []
@@ -132,42 +165,78 @@ export default function SessionEditor() {
         </div>
 
         <div>
-          <p className="text-xs text-base-500 mb-2">Día</p>
-          {dayOptions.length > 0 && (
-            <div className="flex gap-2 mb-2 overflow-x-auto">
-              {dayOptions.map((opt, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSession({ ...session, dayName: opt.dayName, dayColor: opt.color })}
-                  className="shrink-0 h-9 px-3 rounded-lg text-xs font-semibold border border-base-700 text-base-300"
-                  style={
-                    session.dayName === opt.dayName && session.dayColor === opt.color
-                      ? { background: opt.color, borderColor: opt.color, color: readableTextColor(opt.color) }
-                      : undefined
-                  }
-                >
-                  {opt.label}
-                </button>
-              ))}
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-base-500">Rutina y día</p>
+            {routines.length > 0 && (
+              <button className="text-xs text-brand font-semibold" onClick={() => setFreeform(!freeform)}>
+                {freeform ? 'Elegir de una rutina' : 'Día libre en su lugar'}
+              </button>
+            )}
+          </div>
+
+          {!freeform && routines.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {routines.map((routine) => (
+                  <button
+                    key={routine.id}
+                    onClick={() => setSelectedRoutineId(routine.id)}
+                    className={`shrink-0 h-9 px-3 rounded-lg text-xs font-semibold border ${
+                      selectedRoutineId === routine.id ? 'bg-base-100 text-base-950 border-base-100' : 'border-base-700 text-base-300'
+                    }`}
+                  >
+                    {routine.name}
+                  </button>
+                ))}
+              </div>
+              {selectedRoutine && (
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {selectedRoutine.days.map((day) => (
+                    <button
+                      key={day.id}
+                      onClick={() => chooseDay(selectedRoutine, day)}
+                      className="shrink-0 h-9 px-3 rounded-lg text-xs font-semibold border border-base-700 text-base-300"
+                      style={
+                        session.dayId === day.id
+                          ? { background: day.color, borderColor: day.color, color: readableTextColor(day.color) }
+                          : undefined
+                      }
+                    >
+                      {day.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {session.dayId && (
+                <p className="text-xs text-base-500">
+                  Cargados los {session.exercises.length} ejercicios de <span className="text-base-300 font-semibold">{session.dayName}</span>. Puedes
+                  editarlos o añadir más abajo.
+                </p>
+              )}
             </div>
           )}
-          <input
-            value={session.dayName}
-            onChange={(e) => setSession({ ...session, dayName: e.target.value })}
-            placeholder="Nombre del día (p. ej. Entreno libre)"
-            className="w-full h-11 bg-base-800 border border-base-700 rounded-xl px-4 text-sm text-base-100 mb-2"
-          />
-          <div className="flex gap-2">
-            {[colorForDayIndex(0), colorForDayIndex(1), colorForDayIndex(2), colorForDayIndex(3), colorForDayIndex(4), colorForDayIndex(5)].map((c) => (
-              <button
-                key={c}
-                onClick={() => setSession({ ...session, dayColor: c })}
-                className={`w-7 h-7 rounded-full border-2 ${session.dayColor === c ? 'border-base-100' : 'border-transparent'}`}
-                style={{ background: c }}
-                aria-label="Elegir color"
+
+          {(freeform || routines.length === 0) && (
+            <>
+              <input
+                value={session.dayName}
+                onChange={(e) => setSession({ ...session, dayName: e.target.value, routineId: null, dayId: null })}
+                placeholder="Nombre del día (p. ej. Entreno libre)"
+                className="w-full h-11 bg-base-800 border border-base-700 rounded-xl px-4 text-sm text-base-100 mb-2"
               />
-            ))}
-          </div>
+              <div className="flex gap-2">
+                {[colorForDayIndex(0), colorForDayIndex(1), colorForDayIndex(2), colorForDayIndex(3), colorForDayIndex(4), colorForDayIndex(5)].map((c) => (
+                  <button
+                    key={c}
+                    onClick={() => setSession({ ...session, dayColor: c })}
+                    className={`w-7 h-7 rounded-full border-2 ${session.dayColor === c ? 'border-base-100' : 'border-transparent'}`}
+                    style={{ background: c }}
+                    aria-label="Elegir color"
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div>
@@ -328,6 +397,24 @@ export default function SessionEditor() {
           Guardar
         </Button>
       </div>
+
+      {pendingDay && (
+        <ActionSheet onDismiss={() => setPendingDay(null)}>
+          <p className="text-lg font-bold mb-1">¿Sustituir los ejercicios?</p>
+          <p className="text-sm text-base-400 mb-5">
+            Ya tienes {session.exercises.length} ejercicio{session.exercises.length === 1 ? '' : 's'} en este entrenamiento. Cargar{' '}
+            <span className="text-base-200 font-semibold">{pendingDay.day.name}</span> los sustituirá por los de ese día.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Button variant="danger" size="lg" onClick={() => applyDay(pendingDay.routine, pendingDay.day)}>
+              Sustituir ejercicios
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setPendingDay(null)}>
+              Cancelar
+            </Button>
+          </div>
+        </ActionSheet>
+      )}
     </div>
   )
 }
