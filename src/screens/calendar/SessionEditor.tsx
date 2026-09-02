@@ -12,9 +12,12 @@ import Card from '../../components/Card'
 import Button from '../../components/Button'
 import Stepper from '../../components/Stepper'
 import RIRSelector from '../../components/RIRSelector'
-import type { SessionExercise, SetEntry, WorkoutSession } from '../../types'
+import { describeSet } from '../../lib/setFormat'
+import type { Exercise, SessionExercise, SetEntry, WorkoutSession } from '../../types'
 
-function defaultSet(): SetEntry {
+function defaultSet(exercise: Exercise): SetEntry {
+  if (exercise.logType === 'time') return { durationSec: exercise.defaultDurationSec ?? 30, rir: '2-3' }
+  if (exercise.logType === 'bodyweight-reps') return { reps: 8, rir: '2-3' }
   return { weight: 20, reps: 8, rir: '2-3' }
 }
 
@@ -78,11 +81,12 @@ export default function SessionEditor() {
   }
 
   function addExercise(exerciseId: string) {
+    const exercise = getExercise(exerciseId)
     const next: SessionExercise = {
       exerciseId,
       order: session.exercises.length + 1,
       isExtra: true,
-      sets: [defaultSet()],
+      sets: exercise ? [defaultSet(exercise)] : [],
     }
     setSession({ ...session, exercises: [...session.exercises, next] })
     setShowPicker(false)
@@ -91,8 +95,10 @@ export default function SessionEditor() {
 
   function addSet(exIndex: number) {
     const ex = session.exercises[exIndex]
+    const exercise = getExercise(ex.exerciseId)
+    if (!exercise) return
     const last = ex.sets[ex.sets.length - 1]
-    updateExercise(exIndex, { sets: [...ex.sets, last ? { ...last } : defaultSet()] })
+    updateExercise(exIndex, { sets: [...ex.sets, last ? { ...last } : defaultSet(exercise)] })
   }
 
   function removeSet(exIndex: number, setIndex: number) {
@@ -209,32 +215,60 @@ export default function SessionEditor() {
                       return (
                         <div key={key} className="rounded-xl bg-base-800/50">
                           <button
-                            className="w-full flex items-center justify-between px-3 py-2 text-sm"
+                            className="w-full flex items-center justify-between px-3 py-2 text-sm gap-2"
                             onClick={() => setExpandedKey(expanded ? null : key)}
                           >
-                            <span className="text-base-500">Serie {setIndex + 1}</span>
-                            <span className="font-semibold text-base-100 tabular">
-                              {set.weight} kg × {set.reps} · RIR {set.rir}
+                            <span className="text-base-500 shrink-0">Serie {setIndex + 1}</span>
+                            <span className="font-semibold text-base-100 tabular flex-1 text-right">
+                              {describeSet(exercise, set)} · RIR {set.rir}
                             </span>
                           </button>
                           {expanded && (
                             <div className="flex flex-col gap-4 px-3 pb-3">
-                              <div>
-                                <p className="text-xs text-base-500 mb-2">Peso</p>
-                                <Stepper
-                                  value={set.weight}
-                                  onChange={(v) => updateSet(exIndex, setIndex, { weight: v })}
-                                  step={exercise.weightIncrement || 1}
-                                  suffix="kg"
-                                  decimals={set.weight % 1 !== 0 ? 1 : 0}
-                                  keypadDecimals={1}
-                                  label="Peso"
-                                />
-                              </div>
-                              <div>
-                                <p className="text-xs text-base-500 mb-2">Repeticiones</p>
-                                <Stepper value={set.reps} onChange={(v) => updateSet(exIndex, setIndex, { reps: v })} step={1} suffix="reps" label="Repeticiones" />
-                              </div>
+                              {exercise.logType === 'weight-reps' && (
+                                <>
+                                  <div>
+                                    <p className="text-xs text-base-500 mb-2">Peso</p>
+                                    <Stepper
+                                      value={set.weight ?? 0}
+                                      onChange={(v) => updateSet(exIndex, setIndex, { weight: v })}
+                                      step={exercise.weightIncrement || 1}
+                                      suffix="kg"
+                                      decimals={(set.weight ?? 0) % 1 !== 0 ? 1 : 0}
+                                      keypadDecimals={1}
+                                      label="Peso"
+                                    />
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-base-500 mb-2">Repeticiones</p>
+                                    <Stepper value={set.reps ?? 0} onChange={(v) => updateSet(exIndex, setIndex, { reps: v })} step={1} suffix="reps" label="Repeticiones" />
+                                  </div>
+                                </>
+                              )}
+                              {exercise.logType === 'bodyweight-reps' && (
+                                <>
+                                  <div>
+                                    <p className="text-xs text-base-500 mb-2">Repeticiones</p>
+                                    <Stepper value={set.reps ?? 0} onChange={(v) => updateSet(exIndex, setIndex, { reps: v })} step={1} suffix="reps" label="Repeticiones" />
+                                  </div>
+                                  <div>
+                                    <p className="text-xs text-base-500 mb-2">Lastre añadido (opcional)</p>
+                                    <Stepper
+                                      value={set.extraWeight ?? 0}
+                                      onChange={(v) => updateSet(exIndex, setIndex, { extraWeight: v || undefined })}
+                                      step={2.5}
+                                      suffix="kg"
+                                      label="Lastre"
+                                    />
+                                  </div>
+                                </>
+                              )}
+                              {exercise.logType === 'time' && (
+                                <div>
+                                  <p className="text-xs text-base-500 mb-2">Duración mantenida</p>
+                                  <Stepper value={set.durationSec ?? 0} onChange={(v) => updateSet(exIndex, setIndex, { durationSec: v })} step={5} min={0} suffix="s" label="Duración" />
+                                </div>
+                              )}
                               <div>
                                 <p className="text-xs text-base-500 mb-2">RIR</p>
                                 <RIRSelector value={set.rir} onChange={(v) => updateSet(exIndex, setIndex, { rir: v })} />

@@ -3,6 +3,7 @@ import { useAppStore } from '../data/store'
 import { bestSet, prForExercise, bestE1RMForExercise, getExerciseHistory } from '../data/progression'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { formatDayLabel, formatWeight } from '../lib/format'
+import { describeSet } from '../lib/setFormat'
 import ExerciseMedia, { youtubeSearchUrl } from './ExerciseMedia'
 import Card from './Card'
 import type { Exercise } from '../types'
@@ -15,9 +16,12 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
   useBodyScrollLock(true)
 
   const history = getExerciseHistory(exercise.id, sessions)
-  const pr = prForExercise(exercise.id, sessions)
-  const best = history[0] ? bestSet(history[0].sets) : undefined
-  const e1rm = bestE1RMForExercise(exercise.id, sessions)
+  const isTime = exercise.logType === 'time'
+  const pr = isTime ? undefined : prForExercise(exercise.id, sessions)
+  const best = !isTime && history[0] ? bestSet(history[0].sets, exercise) : undefined
+  const e1rm = isTime ? 0 : bestE1RMForExercise(exercise.id, sessions)
+  const bestDurationSec = isTime ? Math.max(0, ...history.flatMap((h) => h.sets.map((s) => s.durationSec ?? 0))) : 0
+  const lastDurationSec = isTime ? history[0]?.sets[history[0].sets.length - 1]?.durationSec : undefined
   const visibleHistory = showAllHistory ? history : history.slice(0, HISTORY_PREVIEW_COUNT)
 
   return (
@@ -63,20 +67,33 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
             <span className="text-xs font-semibold text-base-300 bg-base-800 px-2.5 py-1 rounded-full">{exercise.pattern}</span>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Card className="p-3 text-center">
-              <p className="text-[10px] text-base-500 uppercase mb-1">Peso actual</p>
-              <p className="font-bold tabular">{best ? `${formatWeight(best.weight)} kg` : '—'}</p>
-            </Card>
-            <Card className="p-3 text-center">
-              <p className="text-[10px] text-base-500 uppercase mb-1">PR</p>
-              <p className="font-bold tabular">{pr ? `${formatWeight(pr.weight)}×${pr.reps}` : '—'}</p>
-            </Card>
-            <Card className="p-3 text-center">
-              <p className="text-[10px] text-base-500 uppercase mb-1">e1RM</p>
-              <p className="font-bold tabular">{e1rm ? `${formatWeight(e1rm)} kg` : '—'}</p>
-            </Card>
-          </div>
+          {isTime ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">Mejor tiempo</p>
+                <p className="font-bold tabular">{bestDurationSec ? `${bestDurationSec}s` : '—'}</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">Última vez</p>
+                <p className="font-bold tabular">{lastDurationSec ? `${lastDurationSec}s` : '—'}</p>
+              </Card>
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">Peso actual</p>
+                <p className="font-bold tabular">{best ? describeSet(exercise, best) : '—'}</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">PR</p>
+                <p className="font-bold tabular">{pr ? describeSet(exercise, pr) : '—'}</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">e1RM</p>
+                <p className="font-bold tabular">{e1rm ? `${formatWeight(e1rm)} kg` : '—'}</p>
+              </Card>
+            </div>
+          )}
 
           {history.length > 0 && (
             <Card>
@@ -89,9 +106,7 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
                       {h.sets.map((s, si) => (
                         <div key={si} className="flex items-center justify-between text-sm tabular gap-2">
                           <span className="text-base-500 shrink-0">Serie {si + 1}</span>
-                          <span className="font-semibold text-base-100 flex-1 text-right">
-                            {formatWeight(s.weight)} kg × {s.reps}
-                          </span>
+                          <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
                           <span className="text-base-400 text-xs shrink-0">RIR {s.rir}</span>
                         </div>
                       ))}

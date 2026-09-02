@@ -38,6 +38,7 @@ function ex(
     tips: extra.tips ?? ['Prioriza la técnica antes que el peso.', 'Controla el tempo, especialmente en la bajada.'],
     weightIncrement: extra.weightIncrement ?? incrementByEquipment[equipment],
     comparisonGroup: extra.comparisonGroup,
+    logType: 'weight-reps',
     ...extra,
   }
 }
@@ -71,7 +72,7 @@ export const exercises: Exercise[] = [
   ex('press-inclinado-smith', 'Press inclinado en Smith', ['pecho', 'hombro', 'triceps'], 'Empuje horizontal-alto', 'smith', 'compound-main', ['press-inclinado-mancuernas', 'press-inclinado-maquina']),
   ex('press-inclinado-maquina', 'Press inclinado en máquina', ['pecho', 'hombro', 'triceps'], 'Empuje horizontal-alto', 'machine', 'compound-main', ['press-inclinado-mancuernas', 'press-inclinado-smith']),
 
-  ex('fondos-pecho', 'Fondos orientados a pecho', ['pecho', 'triceps'], 'Empuje vertical descendente', 'bodyweight', 'compound-main', ['fondos-asistidos', 'press-declinado-maquina']),
+  ex('fondos-pecho', 'Fondos orientados a pecho', ['pecho', 'triceps'], 'Empuje vertical descendente', 'bodyweight', 'compound-main', ['fondos-asistidos', 'press-declinado-maquina'], { logType: 'bodyweight-reps' }),
   ex('fondos-asistidos', 'Fondos asistidos', ['pecho', 'triceps'], 'Empuje vertical descendente', 'machine', 'compound-main', ['fondos-pecho', 'press-declinado-maquina']),
   ex('press-declinado-maquina', 'Press declinado / máquina', ['pecho', 'triceps'], 'Empuje horizontal descendente', 'machine', 'compound-main', ['fondos-pecho', 'fondos-asistidos']),
 
@@ -84,7 +85,7 @@ export const exercises: Exercise[] = [
   ex('triceps-barra-polea', 'Tríceps en polea con barra', ['triceps'], 'Extensión de codo', 'cable', 'isolation', ['triceps-unilateral-polea', 'triceps-cuerda']),
 
   // ---------- PULL ----------
-  ex('dominadas', 'Dominadas', ['espalda', 'biceps'], 'Tracción vertical', 'bodyweight', 'compound-main', ['dominadas-asistidas', 'jalon-pecho']),
+  ex('dominadas', 'Dominadas', ['espalda', 'biceps'], 'Tracción vertical', 'bodyweight', 'compound-main', ['dominadas-asistidas', 'jalon-pecho'], { logType: 'bodyweight-reps' }),
   ex('dominadas-asistidas', 'Dominadas asistidas', ['espalda', 'biceps'], 'Tracción vertical', 'machine', 'compound-main', ['dominadas', 'jalon-pecho']),
   ex('jalon-pecho', 'Jalón al pecho', ['espalda', 'biceps'], 'Tracción vertical', 'cable', 'compound-secondary', ['jalon-neutro', 'jalon-unilateral']),
   ex('jalon-neutro', 'Jalón agarre neutro', ['espalda', 'biceps'], 'Tracción vertical', 'cable', 'compound-main', ['jalon-convencional', 'dominadas-asistidas']),
@@ -140,10 +141,10 @@ export const exercises: Exercise[] = [
   ex('gemelo-de-pie', 'Gemelo de pie', ['gemelos'], 'Flexión plantar', 'machine', 'isolation', ['gemelos-maquina', 'gemelos-prensa']),
 
   // ---------- ABS ----------
-  ex('plancha', 'Plancha frontal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs', defaultDurationSec: 40 }),
+  ex('plancha', 'Plancha frontal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs', defaultDurationSec: 40, logType: 'time' }),
   ex('crunch-polea', 'Crunch en polea', ['core'], 'Flexión de tronco', 'cable', 'isolation', [], { section: 'abs' }),
-  ex('elevacion-piernas-colgado', 'Elevación de piernas colgado', ['core'], 'Flexión de cadera', 'bodyweight', 'isolation', [], { section: 'abs' }),
-  ex('rueda-abdominal', 'Rueda abdominal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs' }),
+  ex('elevacion-piernas-colgado', 'Elevación de piernas colgado', ['core'], 'Flexión de cadera', 'bodyweight', 'isolation', [], { section: 'abs', logType: 'bodyweight-reps' }),
+  ex('rueda-abdominal', 'Rueda abdominal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs', logType: 'bodyweight-reps' }),
   ex('crunch-maquina', 'Crunch en máquina', ['core'], 'Flexión de tronco', 'machine', 'isolation', [], { section: 'abs' }),
   ex('oblicuo-polea', 'Oblicuo en polea (leñador)', ['core'], 'Rotación de tronco', 'cable', 'isolation', [], { section: 'abs' }),
 

@@ -14,6 +14,7 @@ import RestTimer from '../../components/RestTimer'
 import Button from '../../components/Button'
 import { formatWeight } from '../../lib/format'
 import { nearestRirRange } from '../../lib/rir'
+import { describeSet } from '../../lib/setFormat'
 import type { RirRange, SetEntry } from '../../types'
 
 export default function ExerciseLogger() {
@@ -25,8 +26,10 @@ export default function ExerciseLogger() {
 
   const sessionEx = activeWorkout?.exercises[idx]
   const exercise = sessionEx ? getExercise(sessionEx.exerciseId) : undefined
+  const logType = exercise?.logType ?? 'weight-reps'
 
   const lastPerformance = useMemo(() => (sessionEx ? getLastPerformance(sessionEx.exerciseId, sessions) : undefined), [sessionEx, sessions])
+  const lastSet = lastPerformance?.sets[lastPerformance.sets.length - 1]
 
   const recommendation = useMemo(() => {
     if (!sessionEx || !exercise) return undefined
@@ -39,18 +42,23 @@ export default function ExerciseLogger() {
   const isFirstCompound = activeWorkout
     ? activeWorkout.exercises.findIndex((e) => getExercise(e.exerciseId)?.type === 'compound-main') === idx
     : false
-  const warmup = exercise && recommendation?.recommendedWeight ? generateWarmup(recommendation.recommendedWeight, exercise.type, isFirstCompound) : []
+  const warmup =
+    exercise && logType === 'weight-reps' && recommendation?.recommendedWeight
+      ? generateWarmup(recommendation.recommendedWeight, exercise.type, isFirstCompound)
+      : []
 
-  const defaultWeight = sessionEx?.sets.length
-    ? sessionEx.sets[sessionEx.sets.length - 1].weight
-    : recommendation?.recommendedWeight ?? lastPerformance?.sets[0]?.weight ?? 20
-  const defaultReps = sessionEx?.sets.length ? sessionEx.sets[sessionEx.sets.length - 1].reps : lastPerformance?.sets[0]?.reps ?? sessionEx?.repMin ?? 8
-  const defaultRir: RirRange = sessionEx?.sets.length
-    ? sessionEx.sets[sessionEx.sets.length - 1].rir
-    : nearestRirRange(rirTarget ? (rirTarget[0] + rirTarget[1]) / 2 : 2)
+  const lastSavedSet = sessionEx?.sets[sessionEx.sets.length - 1]
+
+  const defaultWeight = lastSavedSet ? lastSavedSet.weight ?? 20 : recommendation?.recommendedWeight ?? lastSet?.weight ?? 20
+  const defaultReps = lastSavedSet ? lastSavedSet.reps ?? 8 : lastSet?.reps ?? sessionEx?.repMin ?? 8
+  const defaultExtraWeight = lastSavedSet ? lastSavedSet.extraWeight ?? 0 : lastSet?.extraWeight ?? 0
+  const defaultDurationSec = lastSavedSet ? lastSavedSet.durationSec ?? 30 : lastSet?.durationSec ?? exercise?.defaultDurationSec ?? 30
+  const defaultRir: RirRange = lastSavedSet ? lastSavedSet.rir : nearestRirRange(rirTarget ? (rirTarget[0] + rirTarget[1]) / 2 : 2)
 
   const [weight, setWeight] = useState(defaultWeight)
   const [reps, setReps] = useState(defaultReps)
+  const [extraWeight, setExtraWeight] = useState(defaultExtraWeight)
+  const [durationSec, setDurationSec] = useState(defaultDurationSec)
   const [rir, setRir] = useState<RirRange>(defaultRir)
   const [restTrigger, setRestTrigger] = useState(0)
 
@@ -64,7 +72,12 @@ export default function ExerciseLogger() {
   }
 
   function saveSet() {
-    const entry: SetEntry = { weight, reps, rir }
+    const entry: SetEntry =
+      logType === 'time'
+        ? { durationSec, rir }
+        : logType === 'bodyweight-reps'
+          ? { reps, extraWeight: extraWeight || undefined, rir }
+          : { weight, reps, rir }
     const exercises = [...activeWorkout!.exercises]
     exercises[idx] = { ...exercises[idx], sets: [...exercises[idx].sets, entry] }
     setActiveWorkout({ ...activeWorkout!, exercises })
@@ -105,23 +118,26 @@ export default function ExerciseLogger() {
             <p className="text-xs text-base-500 uppercase tracking-wide">Recomendación para hoy</p>
             {rirTarget && <span className="text-xs text-base-500 shrink-0 whitespace-nowrap">RIR obj. {rirTarget[0]}-{rirTarget[1]}</span>}
           </div>
-          <div className="grid grid-cols-3 gap-2 text-center mb-3">
+          <div className={`grid gap-2 text-center mb-3 ${logType === 'weight-reps' ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <div>
               <p className="text-[10px] text-base-500 uppercase mb-0.5">Series</p>
               <p className="text-lg font-bold tabular text-base-100">{sessionEx.targetSets}</p>
             </div>
             <div>
-              <p className="text-[10px] text-base-500 uppercase mb-0.5">Reps</p>
+              <p className="text-[10px] text-base-500 uppercase mb-0.5">{logType === 'time' ? 'Duración' : 'Reps'}</p>
               <p className="text-lg font-bold tabular text-base-100">
                 {sessionEx.repMin}-{sessionEx.repMax}
+                {logType === 'time' ? 's' : ''}
               </p>
             </div>
-            <div>
-              <p className="text-[10px] text-base-500 uppercase mb-0.5">Peso sugerido</p>
-              <p className="text-lg font-bold tabular text-brand">
-                {recommendation?.recommendedWeight ? `${formatWeight(recommendation.recommendedWeight)} kg` : '—'}
-              </p>
-            </div>
+            {logType === 'weight-reps' && (
+              <div>
+                <p className="text-[10px] text-base-500 uppercase mb-0.5">Peso sugerido</p>
+                <p className="text-lg font-bold tabular text-brand">
+                  {recommendation?.recommendedWeight ? `${formatWeight(recommendation.recommendedWeight)} kg` : '—'}
+                </p>
+              </div>
+            )}
           </div>
           {recommendation && <p className="text-xs text-base-400 pt-3 border-t border-base-800">{recommendation.message}</p>}
         </Card>
@@ -143,22 +159,47 @@ export default function ExerciseLogger() {
         <Card className="border-base-700">
           <p className="text-sm font-bold mb-4">SERIE {setNumber}</p>
           <div className="flex flex-col gap-5">
-            <div>
-              <p className="text-xs text-base-500 mb-2">Peso</p>
-              <Stepper
-                value={weight}
-                onChange={setWeight}
-                step={exercise.weightIncrement || 1}
-                suffix="kg"
-                decimals={weight % 1 !== 0 ? 1 : 0}
-                keypadDecimals={1}
-                label="Peso"
-              />
-            </div>
-            <div>
-              <p className="text-xs text-base-500 mb-2">Repeticiones</p>
-              <Stepper value={reps} onChange={setReps} step={1} suffix="reps" label="Repeticiones" />
-            </div>
+            {logType === 'weight-reps' && (
+              <>
+                <div>
+                  <p className="text-xs text-base-500 mb-2">Peso</p>
+                  <Stepper
+                    value={weight}
+                    onChange={setWeight}
+                    step={exercise.weightIncrement || 1}
+                    suffix="kg"
+                    decimals={weight % 1 !== 0 ? 1 : 0}
+                    keypadDecimals={1}
+                    label="Peso"
+                  />
+                </div>
+                <div>
+                  <p className="text-xs text-base-500 mb-2">Repeticiones</p>
+                  <Stepper value={reps} onChange={setReps} step={1} suffix="reps" label="Repeticiones" />
+                </div>
+              </>
+            )}
+
+            {logType === 'bodyweight-reps' && (
+              <>
+                <div>
+                  <p className="text-xs text-base-500 mb-2">Repeticiones</p>
+                  <Stepper value={reps} onChange={setReps} step={1} suffix="reps" label="Repeticiones" />
+                </div>
+                <div>
+                  <p className="text-xs text-base-500 mb-2">Lastre añadido (opcional)</p>
+                  <Stepper value={extraWeight} onChange={setExtraWeight} step={2.5} suffix="kg" decimals={extraWeight % 1 !== 0 ? 1 : 0} keypadDecimals={1} label="Lastre" />
+                </div>
+              </>
+            )}
+
+            {logType === 'time' && (
+              <div>
+                <p className="text-xs text-base-500 mb-2">Duración mantenida</p>
+                <Stepper value={durationSec} onChange={setDurationSec} step={5} min={0} suffix="s" label="Duración" />
+              </div>
+            )}
+
             <div>
               <p className="text-xs text-base-500 mb-2">RIR</p>
               <RIRSelector value={rir} onChange={setRir} />
@@ -182,9 +223,7 @@ export default function ExerciseLogger() {
               {sessionEx.sets.map((s, i) => (
                 <div key={i} className="py-2 flex items-center justify-between text-sm tabular gap-2">
                   <span className="text-base-500 shrink-0">Serie {i + 1}</span>
-                  <span className="font-semibold text-base-100 flex-1 text-right">
-                    {formatWeight(s.weight)} kg × {s.reps}
-                  </span>
+                  <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
                   <span className="text-base-400 shrink-0">RIR {s.rir}</span>
                 </div>
               ))}

@@ -3,6 +3,8 @@ export type Variant = 'A' | 'B' | null
 
 export type ExerciseType = 'compound-main' | 'compound-secondary' | 'isolation'
 
+export type ExerciseLogType = 'weight-reps' | 'bodyweight-reps' | 'time'
+
 export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'smith'
 
 export type Muscle =
@@ -28,6 +30,7 @@ export interface Exercise {
   pattern: string
   equipment: Equipment
   type: ExerciseType
+  logType: ExerciseLogType
   alternativeIds: string[]
   media: { kind: 'placeholder'; label: string }
   instructions: string[]
@@ -67,8 +70,10 @@ export interface RoutineTemplate {
 export type RirRange = '0-1' | '1-2' | '2-3' | '3+'
 
 export interface SetEntry {
-  weight: number
-  reps: number
+  weight?: number
+  extraWeight?: number
+  reps?: number
+  durationSec?: number
   rir: RirRange
   isWarmup?: boolean
 }

@@ -86,6 +86,7 @@ export default function SelectWorkout() {
                     <span className="font-medium text-base-100 flex-1 min-w-0 truncate">{exercise.name}</span>
                     <span className="text-xs text-base-500 tabular shrink-0 whitespace-nowrap">
                       {item.targetSets} × {item.repMin}-{item.repMax}
+                      {exercise.logType === 'time' ? 's' : ''}
                     </span>
                   </div>
                 )

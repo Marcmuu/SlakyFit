@@ -1,6 +1,7 @@
 import type { WorkoutSession, Muscle } from '../types'
 import { getExercise, exercises } from './exercises'
 import { getExerciseHistory, prForExercise } from './progression'
+import { setVolume, describeSet } from '../lib/setFormat'
 import { mondayOf } from '../lib/dateGrid'
 
 export function totalSets(sessions: WorkoutSession[]): number {
@@ -8,10 +9,13 @@ export function totalSets(sessions: WorkoutSession[]): number {
 }
 
 export function totalVolume(sessions: WorkoutSession[]): number {
-  return sessions.reduce(
-    (sum, s) => sum + s.exercises.reduce((a, e) => a + e.sets.reduce((b, set) => b + set.weight * set.reps, 0), 0),
-    0,
-  )
+  return sessions.reduce((sum, s) => sum + s.exercises.reduce((a, e) => a + volumeForSessionExercise(e), 0), 0)
+}
+
+function volumeForSessionExercise(sessionEx: WorkoutSession['exercises'][number]): number {
+  const exercise = getExercise(sessionEx.exerciseId)
+  if (!exercise) return 0
+  return sessionEx.sets.reduce((sum, s) => sum + setVolume(exercise, s), 0)
 }
 
 export function volumeByMuscle(sessions: WorkoutSession[]): { label: Muscle; value: number }[] {
@@ -20,7 +24,7 @@ export function volumeByMuscle(sessions: WorkoutSession[]): { label: Muscle; val
     for (const sessionEx of session.exercises) {
       const exercise = getExercise(sessionEx.exerciseId)
       if (!exercise) continue
-      const volume = sessionEx.sets.reduce((a, s) => a + s.weight * s.reps, 0)
+      const volume = volumeForSessionExercise(sessionEx)
       for (const muscle of exercise.mainMuscles) {
         map.set(muscle, (map.get(muscle) ?? 0) + volume)
       }
@@ -34,22 +38,21 @@ export function volumeByMuscle(sessions: WorkoutSession[]): { label: Muscle; val
 
 export interface RecentPR {
   exerciseName: string
-  weight: number
-  reps: number
+  description: string
   date: string
 }
 
 export function mostRecentPR(sessions: WorkoutSession[]): RecentPR | undefined {
   let best: RecentPR | undefined
   for (const exercise of exercises) {
-    if (exercise.section !== 'main') continue
+    if (exercise.section !== 'main' || exercise.logType === 'time') continue
     const pr = prForExercise(exercise.id, sessions)
     if (!pr) continue
     const history = getExerciseHistory(exercise.id, sessions)
-    const achievedAt = history.find((h) => h.sets.some((s) => s.weight === pr.weight && s.reps === pr.reps))
+    const achievedAt = history.find((h) => h.sets.some((s) => s === pr))
     if (!achievedAt) continue
     if (!best || achievedAt.date > best.date) {
-      best = { exerciseName: exercise.name, weight: pr.weight, reps: pr.reps, date: achievedAt.date }
+      best = { exerciseName: exercise.name, description: describeSet(exercise, pr), date: achievedAt.date }
     }
   }
   return best

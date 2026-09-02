@@ -1,5 +1,7 @@
-import type { WorkoutSession, SessionExercise, SetEntry, ExerciseType } from '../types'
+import type { WorkoutSession, SessionExercise, SetEntry, ExerciseType, Exercise } from '../types'
 import { RIR_MIDPOINT } from '../lib/rir'
+import { getExercise } from './exercises'
+import { effectiveWeight, effectiveReps } from '../lib/setFormat'
 
 export interface ExerciseHistoryEntry {
   date: string
@@ -27,28 +29,35 @@ export function computeE1RM(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30) * 10) / 10
 }
 
-export function bestSet(sets: SetEntry[]): SetEntry | undefined {
+// Solo tiene sentido para ejercicios con peso (propio +lastre o externo);
+// un ejercicio de tiempo no tiene una "mejor serie" en términos de e1RM.
+export function bestSet(sets: SetEntry[], exercise: Exercise): SetEntry | undefined {
+  if (exercise.logType === 'time') return undefined
   return sets.reduce<SetEntry | undefined>((best, s) => {
     if (!best) return s
-    return computeE1RM(s.weight, s.reps) > computeE1RM(best.weight, best.reps) ? s : best
+    return computeE1RM(effectiveWeight(exercise, s), effectiveReps(s)) > computeE1RM(effectiveWeight(exercise, best), effectiveReps(best)) ? s : best
   }, undefined)
 }
 
 export function bestE1RMForExercise(exerciseId: string, sessions: WorkoutSession[]): number {
+  const exercise = getExercise(exerciseId)
+  if (!exercise || exercise.logType === 'time') return 0
   let max = 0
   for (const entry of getExerciseHistory(exerciseId, sessions)) {
     for (const set of entry.sets) {
-      max = Math.max(max, computeE1RM(set.weight, set.reps))
+      max = Math.max(max, computeE1RM(effectiveWeight(exercise, set), effectiveReps(set)))
     }
   }
   return max
 }
 
 export function prForExercise(exerciseId: string, sessions: WorkoutSession[]): SetEntry | undefined {
+  const exercise = getExercise(exerciseId)
+  if (!exercise || exercise.logType === 'time') return undefined
   let pr: SetEntry | undefined
   for (const entry of getExerciseHistory(exerciseId, sessions)) {
-    const candidate = bestSet(entry.sets)
-    if (candidate && (!pr || computeE1RM(candidate.weight, candidate.reps) > computeE1RM(pr.weight, pr.reps))) {
+    const candidate = bestSet(entry.sets, exercise)
+    if (candidate && (!pr || computeE1RM(effectiveWeight(exercise, candidate), effectiveReps(candidate)) > computeE1RM(effectiveWeight(exercise, pr), effectiveReps(pr)))) {
       pr = candidate
     }
   }
@@ -68,13 +77,37 @@ export function recommendNextWeight(
   rirTargetMin: number,
   weightIncrement: number,
 ): ProgressionResult {
+  const exercise = getExercise(exerciseId)
   const last = getLastPerformance(exerciseId, sessions)
-  if (!last || last.sets.length === 0) {
+
+  if (exercise?.logType === 'time') {
+    if (!last || last.sets.length === 0) {
+      return { message: 'Sin historial todavía. Mantén la posición con buena técnica el mayor tiempo posible.' }
+    }
+    const lastDuration = last.sets[last.sets.length - 1].durationSec ?? 0
+    return { message: `La última vez aguantaste ${lastDuration}s. Intenta igualar o superar ese tiempo sin perder la técnica.` }
+  }
+
+  if (exercise?.logType === 'bodyweight-reps') {
+    if (!last || last.sets.length === 0) {
+      return { message: 'Sin historial todavía. Haz las repeticiones que puedas con buena técnica.' }
+    }
+    const lastExtra = last.sets[last.sets.length - 1].extraWeight ?? 0
+    const allAtTop = last.sets.every((s) => (s.reps ?? 0) >= repMax)
+    if (allAtTop) {
+      return lastExtra > 0
+        ? { message: `Completaste el rango con +${lastExtra} kg de lastre. Prueba a subir un poco el lastre.` }
+        : { message: 'Completaste el rango en todas las series. Prueba a añadir algo de lastre la próxima vez.' }
+    }
+    return { message: 'Mantén el mismo lastre e intenta sumar alguna repetición respecto a la última vez.' }
+  }
+
+  if (!exercise || !last || last.sets.length === 0) {
     return { message: 'Sin historial todavía. Elige un peso con el que puedas completar el rango con buena técnica.' }
   }
 
-  const weights = last.sets.map((s) => s.weight)
-  const reps = last.sets.map((s) => s.reps)
+  const weights = last.sets.map((s) => effectiveWeight(exercise, s))
+  const reps = last.sets.map((s) => effectiveReps(s))
   const rirMidpoints = last.sets.map((s) => RIR_MIDPOINT[s.rir])
   const lastWeight = weights[weights.length - 1]
   const allAtTop = reps.every((r) => r >= repMax)

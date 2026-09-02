@@ -73,13 +73,14 @@ export default function DayEditor() {
   }
 
   function addExercise(exerciseId: string) {
+    const isTime = getExercise(exerciseId)?.logType === 'time'
     const slot: RoutineDayExercise = {
       id: newId('slot'),
       exerciseId,
       order: slots.length + 1,
       targetSets: 3,
-      repMin: 8,
-      repMax: 12,
+      repMin: isTime ? 20 : 8,
+      repMax: isTime ? 40 : 12,
     }
     updateDayExercises([...slots, slot])
     setShowPicker(false)
@@ -129,7 +130,8 @@ export default function DayEditor() {
                     <button className="flex-1 min-w-0 text-left" onClick={() => setExpandedSlotId(expanded ? null : slot.id)}>
                       <p className="font-semibold text-base-100 truncate">{exercise.name}</p>
                       <p className="text-xs text-base-500 tabular">
-                        {slot.targetSets} × {slot.repMin}-{slot.repMax} reps
+                        {slot.targetSets} × {slot.repMin}-{slot.repMax}
+                        {exercise.logType === 'time' ? 's' : ' reps'}
                       </p>
                     </button>
                     <button onClick={() => removeSlot(slot.id)} className="text-xs text-accent-push shrink-0">
@@ -144,25 +146,25 @@ export default function DayEditor() {
                         <Stepper value={slot.targetSets} onChange={(v) => updateSlot(slot.id, { targetSets: v })} step={1} min={1} max={10} label="Series" />
                       </div>
                       <div>
-                        <p className="text-xs text-base-500 mb-2">Repeticiones mínimas</p>
+                        <p className="text-xs text-base-500 mb-2">{exercise.logType === 'time' ? 'Duración mínima (s)' : 'Repeticiones mínimas'}</p>
                         <Stepper
                           value={slot.repMin}
                           onChange={(v) => updateSlot(slot.id, { repMin: v, repMax: Math.max(v, slot.repMax) })}
-                          step={1}
+                          step={exercise.logType === 'time' ? 5 : 1}
                           min={1}
-                          max={50}
-                          label="Repeticiones mínimas"
+                          max={exercise.logType === 'time' ? 600 : 50}
+                          label="Mínimo"
                         />
                       </div>
                       <div>
-                        <p className="text-xs text-base-500 mb-2">Repeticiones máximas</p>
+                        <p className="text-xs text-base-500 mb-2">{exercise.logType === 'time' ? 'Duración máxima (s)' : 'Repeticiones máximas'}</p>
                         <Stepper
                           value={slot.repMax}
                           onChange={(v) => updateSlot(slot.id, { repMax: v, repMin: Math.min(v, slot.repMin) })}
-                          step={1}
+                          step={exercise.logType === 'time' ? 5 : 1}
                           min={1}
-                          max={50}
-                          label="Repeticiones máximas"
+                          max={exercise.logType === 'time' ? 600 : 50}
+                          label="Máximo"
                         />
                       </div>
                     </div>

@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
 import { prForExercise, computeE1RM } from '../../data/progression'
-import { formatDayLabel, formatWeekday, formatWeight } from '../../lib/format'
+import { formatDayLabel, formatWeekday } from '../../lib/format'
+import { describeSet, effectiveWeight, effectiveReps } from '../../lib/setFormat'
 import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
@@ -64,15 +65,16 @@ export default function DayDetail() {
                   </div>
                   <div className="flex flex-col divide-y divide-base-800">
                     {sessionEx.sets.map((s, si) => {
-                      const isRecord = pr && pr.weight === s.weight && pr.reps === s.reps && computeE1RM(s.weight, s.reps) === computeE1RM(pr.weight, pr.reps)
+                      const isRecord =
+                        pr &&
+                        computeE1RM(effectiveWeight(exercise, s), effectiveReps(s)) > 0 &&
+                        computeE1RM(effectiveWeight(exercise, s), effectiveReps(s)) === computeE1RM(effectiveWeight(exercise, pr), effectiveReps(pr))
                       return (
-                        <div key={si} className="py-1.5 flex items-center justify-between text-sm tabular">
-                          <span className="text-base-500">Serie {si + 1}</span>
-                          <span className="font-semibold text-base-100">
-                            {formatWeight(s.weight)} kg × {s.reps}
-                          </span>
-                          <span className="text-base-400">RIR {s.rir}</span>
-                          {isRecord && <span className="text-[10px] font-bold text-brand">PR</span>}
+                        <div key={si} className="py-1.5 flex items-center justify-between text-sm tabular gap-2">
+                          <span className="text-base-500 shrink-0">Serie {si + 1}</span>
+                          <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
+                          <span className="text-base-400 shrink-0">RIR {s.rir}</span>
+                          {isRecord && <span className="text-[10px] font-bold text-brand shrink-0">PR</span>}
                         </div>
                       )
                     })}

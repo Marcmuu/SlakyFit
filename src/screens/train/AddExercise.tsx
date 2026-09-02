@@ -23,13 +23,14 @@ export default function AddExercise() {
   function add(exerciseId: string) {
     const exercise = exercises.find((e) => e.id === exerciseId)
     const isAbs = exercise?.section === 'abs'
+    const isTime = exercise?.logType === 'time'
     const next = {
       exerciseId,
       order: activeWorkout!.exercises.length + 1,
       isExtra: true,
       targetSets: 3,
-      repMin: isAbs ? 12 : 8,
-      repMax: isAbs ? 20 : 12,
+      repMin: isTime ? 20 : isAbs ? 12 : 8,
+      repMax: isTime ? 40 : isAbs ? 20 : 12,
       sets: [],
     }
     setActiveWorkout({ ...activeWorkout!, exercises: [...activeWorkout!.exercises, next] })

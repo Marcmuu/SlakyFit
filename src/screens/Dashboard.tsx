@@ -4,7 +4,7 @@ import { useAppStore } from '../data/store'
 import { getLastWorkoutSession, getRecommendedDay, countSessionsThisWeek } from '../data/recommendation'
 import { mostRecentPR } from '../data/analytics'
 import { currentPhase, currentWeekNumber } from '../lib/programWeek'
-import { formatDayLabel, formatWeight } from '../lib/format'
+import { formatDayLabel } from '../lib/format'
 import { buildActiveWorkout } from '../lib/startWorkout'
 import Card from '../components/Card'
 import Button from '../components/Button'
@@ -95,7 +95,7 @@ export default function Dashboard() {
         <Card className="bg-brand/5 border-brand/30">
           <p className="text-xs text-brand font-semibold mb-1">Récord reciente</p>
           <p className="text-base-100 font-bold">
-            {recentPR.exerciseName} · {formatWeight(recentPR.weight)} kg × {recentPR.reps}
+            {recentPR.exerciseName} · {recentPR.description}
           </p>
           <p className="text-xs text-base-500 mt-0.5">{formatDayLabel(recentPR.date)}</p>
         </Card>

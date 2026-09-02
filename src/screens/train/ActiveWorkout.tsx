@@ -153,7 +153,8 @@ export default function ActiveWorkout() {
                     {sessionEx.originalExerciseId && <span className="text-[10px] font-bold text-accent-pull bg-accent-pull/10 px-1.5 py-0.5 rounded-full shrink-0">SUSTITUIDO</span>}
                   </div>
                   <p className={`text-xs mt-0.5 tabular ${partial ? 'text-accent-warning font-semibold' : 'text-base-500'}`}>
-                    {done}/{sessionEx.targetSets} series · {sessionEx.repMin}-{sessionEx.repMax} reps
+                    {done}/{sessionEx.targetSets} series · {sessionEx.repMin}-{sessionEx.repMax}
+                    {exercise.logType === 'time' ? 's' : ' reps'}
                   </p>
                 </button>
                 <div className="flex flex-col items-end gap-1 shrink-0">

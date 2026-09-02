@@ -4,6 +4,7 @@ import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
 import { getExerciseHistory, bestSet, bestE1RMForExercise, prForExercise, computeE1RM } from '../../data/progression'
 import { formatDayLabel, formatWeight } from '../../lib/format'
+import { describeSet, effectiveWeight, effectiveReps } from '../../lib/setFormat'
 import PageHeader from '../../components/PageHeader'
 import ExerciseMedia, { youtubeSearchUrl } from '../../components/ExerciseMedia'
 import Card from '../../components/Card'
@@ -19,20 +20,24 @@ export default function ExerciseDetail() {
   const exercise = exerciseId ? getExercise(exerciseId) : undefined
   const [showAllHistory, setShowAllHistory] = useState(false)
 
+  const isTime = exercise?.logType === 'time'
   const history = useMemo(() => (exerciseId ? getExerciseHistory(exerciseId, sessions) : []), [exerciseId, sessions])
-  const pr = exerciseId ? prForExercise(exerciseId, sessions) : undefined
-  const best = history[0] ? bestSet(history[0].sets) : undefined
-  const e1rm = exerciseId ? bestE1RMForExercise(exerciseId, sessions) : 0
+  const pr = exerciseId && !isTime ? prForExercise(exerciseId, sessions) : undefined
+  const best = !isTime && history[0] ? bestSet(history[0].sets, exercise!) : undefined
+  const e1rm = exerciseId && !isTime ? bestE1RMForExercise(exerciseId, sessions) : 0
+  const bestDurationSec = isTime ? Math.max(0, ...history.flatMap((h) => h.sets.map((s) => s.durationSec ?? 0))) : 0
 
   const chartData = useMemo(
     () =>
-      [...history]
-        .reverse()
-        .map((h) => ({
-          x: formatDayLabel(h.date).split(' ')[0],
-          y: Math.max(...h.sets.map((s) => computeE1RM(s.weight, s.reps))),
-        })),
-    [history],
+      !exercise || isTime
+        ? []
+        : [...history]
+            .reverse()
+            .map((h) => ({
+              x: formatDayLabel(h.date).split(' ')[0],
+              y: Math.max(...h.sets.map((s) => computeE1RM(effectiveWeight(exercise, s), effectiveReps(s)))),
+            })),
+    [history, exercise, isTime],
   )
 
   if (!exercise) {
@@ -45,11 +50,20 @@ export default function ExerciseDetail() {
 
   function addToWorkout() {
     if (!activeWorkout) return
+    const isTimeExercise = exercise!.logType === 'time'
     setActiveWorkout({
       ...activeWorkout,
       exercises: [
         ...activeWorkout.exercises,
-        { exerciseId: exercise!.id, order: activeWorkout.exercises.length + 1, isExtra: true, targetSets: 3, repMin: 8, repMax: 12, sets: [] },
+        {
+          exerciseId: exercise!.id,
+          order: activeWorkout.exercises.length + 1,
+          isExtra: true,
+          targetSets: 3,
+          repMin: isTimeExercise ? 20 : 8,
+          repMax: isTimeExercise ? 40 : 12,
+          sets: [],
+        },
       ],
     })
     navigate('/train/session')
@@ -82,25 +96,40 @@ export default function ExerciseDetail() {
           <span className="text-xs font-semibold text-base-300 bg-base-800 px-2.5 py-1 rounded-full">{exercise.pattern}</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-base-500 uppercase mb-1">Peso actual</p>
-            <p className="font-bold tabular">{best ? `${formatWeight(best.weight)} kg` : '—'}</p>
-          </Card>
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-base-500 uppercase mb-1">PR</p>
-            <p className="font-bold tabular">{pr ? `${formatWeight(pr.weight)}×${pr.reps}` : '—'}</p>
-          </Card>
-          <Card className="p-3 text-center">
-            <p className="text-[10px] text-base-500 uppercase mb-1">e1RM</p>
-            <p className="font-bold tabular">{e1rm ? `${formatWeight(e1rm)} kg` : '—'}</p>
-          </Card>
-        </div>
+        {isTime ? (
+          <div className="grid grid-cols-2 gap-2">
+            <Card className="p-3 text-center">
+              <p className="text-[10px] text-base-500 uppercase mb-1">Mejor tiempo</p>
+              <p className="font-bold tabular">{bestDurationSec ? `${bestDurationSec}s` : '—'}</p>
+            </Card>
+            <Card className="p-3 text-center">
+              <p className="text-[10px] text-base-500 uppercase mb-1">Última vez</p>
+              <p className="font-bold tabular">{history[0] ? `${history[0].sets[history[0].sets.length - 1].durationSec ?? 0}s` : '—'}</p>
+            </Card>
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">Peso actual</p>
+                <p className="font-bold tabular">{best ? describeSet(exercise, best) : '—'}</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">PR</p>
+                <p className="font-bold tabular">{pr ? describeSet(exercise, pr) : '—'}</p>
+              </Card>
+              <Card className="p-3 text-center">
+                <p className="text-[10px] text-base-500 uppercase mb-1">e1RM</p>
+                <p className="font-bold tabular">{e1rm ? `${formatWeight(e1rm)} kg` : '—'}</p>
+              </Card>
+            </div>
 
-        <Card>
-          <p className="text-sm font-bold mb-2">Progreso (e1RM)</p>
-          <TrendLineChart data={chartData} unit=" kg" />
-        </Card>
+            <Card>
+              <p className="text-sm font-bold mb-2">Progreso (e1RM)</p>
+              <TrendLineChart data={chartData} unit=" kg" />
+            </Card>
+          </>
+        )}
 
         <Card>
           <p className="text-sm font-bold mb-3">Instrucciones</p>
@@ -158,9 +187,7 @@ export default function ExerciseDetail() {
                     {h.sets.map((s, si) => (
                       <div key={si} className="flex items-center justify-between text-sm tabular gap-2">
                         <span className="text-base-500 shrink-0">Serie {si + 1}</span>
-                        <span className="font-semibold text-base-100 flex-1 text-right">
-                          {formatWeight(s.weight)} kg × {s.reps}
-                        </span>
+                        <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
                         <span className="text-base-400 text-xs shrink-0">RIR {s.rir}</span>
                       </div>
                     ))}

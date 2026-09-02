@@ -5,6 +5,7 @@ import { exercises } from '../../data/exercises'
 import { getExerciseHistory, prForExercise, bestE1RMForExercise } from '../../data/progression'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import { formatWeight } from '../../lib/format'
+import { describeSet } from '../../lib/setFormat'
 import Card from '../../components/Card'
 
 export default function ExercisesTab() {
@@ -36,9 +37,11 @@ export default function ExercisesTab() {
       />
       <div className="flex flex-col gap-2">
         {filtered.map(({ exercise, history }) => {
-          const pr = prForExercise(exercise.id, sessions)
-          const e1rm = bestE1RMForExercise(exercise.id, sessions)
+          const isTime = exercise.logType === 'time'
+          const pr = isTime ? undefined : prForExercise(exercise.id, sessions)
+          const e1rm = isTime ? 0 : bestE1RMForExercise(exercise.id, sessions)
           const current = history[0]?.sets[0]
+          const bestDurationSec = isTime ? Math.max(0, ...history.flatMap((h) => h.sets.map((s) => s.durationSec ?? 0))) : 0
           return (
             <button key={exercise.id} onClick={() => navigate(`/library/${exercise.id}`)} className="text-left">
               <Card className="active:bg-base-800 p-3">
@@ -47,9 +50,18 @@ export default function ExercisesTab() {
                   <span className="text-base-600 shrink-0">›</span>
                 </div>
                 <div className="flex gap-4 text-xs text-base-400 tabular">
-                  <span>Actual: {current ? `${formatWeight(current.weight)} kg` : '—'}</span>
-                  <span>PR: {pr ? `${formatWeight(pr.weight)}×${pr.reps}` : '—'}</span>
-                  <span>e1RM: {e1rm ? `${formatWeight(e1rm)} kg` : '—'}</span>
+                  {isTime ? (
+                    <>
+                      <span>Actual: {current?.durationSec ? `${current.durationSec}s` : '—'}</span>
+                      <span>Mejor: {bestDurationSec ? `${bestDurationSec}s` : '—'}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Actual: {current ? describeSet(exercise, current) : '—'}</span>
+                      <span>PR: {pr ? describeSet(exercise, pr) : '—'}</span>
+                      <span>e1RM: {e1rm ? `${formatWeight(e1rm)} kg` : '—'}</span>
+                    </>
+                  )}
                 </div>
               </Card>
             </button>
