@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
@@ -10,11 +10,14 @@ import Card from '../../components/Card'
 import Button from '../../components/Button'
 import TrendLineChart from '../../components/charts/TrendLineChart'
 
+const HISTORY_PREVIEW_COUNT = 6
+
 export default function ExerciseDetail() {
   const { exerciseId } = useParams()
   const navigate = useNavigate()
   const { sessions, activeWorkout, setActiveWorkout } = useAppStore()
   const exercise = exerciseId ? getExercise(exerciseId) : undefined
+  const [showAllHistory, setShowAllHistory] = useState(false)
 
   const history = useMemo(() => (exerciseId ? getExerciseHistory(exerciseId, sessions) : []), [exerciseId, sessions])
   const pr = exerciseId ? prForExercise(exerciseId, sessions) : undefined
@@ -146,17 +149,30 @@ export default function ExerciseDetail() {
 
         {history.length > 0 && (
           <Card>
-            <p className="text-sm font-bold mb-3">Últimos entrenamientos</p>
-            <div className="flex flex-col divide-y divide-base-800">
-              {history.slice(0, 6).map((h, i) => (
-                <div key={i} className="py-2 flex items-start justify-between gap-2 text-sm">
-                  <span className="text-base-500 shrink-0">{formatDayLabel(h.date)}</span>
-                  <span className="font-semibold text-base-100 tabular text-right">
-                    {formatWeight(h.sets[0].weight)} kg · {h.sets.map((s) => s.reps).join('/')}
-                  </span>
+            <p className="text-sm font-bold mb-3">Historial</p>
+            <div className="flex flex-col gap-3">
+              {(showAllHistory ? history : history.slice(0, HISTORY_PREVIEW_COUNT)).map((h, i) => (
+                <div key={h.date} className={i > 0 ? 'pt-3 border-t border-base-800' : ''}>
+                  <p className="text-xs text-base-500 mb-1.5">{formatDayLabel(h.date)}</p>
+                  <div className="flex flex-col gap-1">
+                    {h.sets.map((s, si) => (
+                      <div key={si} className="flex items-center justify-between text-sm tabular gap-2">
+                        <span className="text-base-500 shrink-0">Serie {si + 1}</span>
+                        <span className="font-semibold text-base-100 flex-1 text-right">
+                          {formatWeight(s.weight)} kg × {s.reps}
+                        </span>
+                        <span className="text-base-400 text-xs shrink-0">RIR {s.rir}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ))}
             </div>
+            {!showAllHistory && history.length > HISTORY_PREVIEW_COUNT && (
+              <button onClick={() => setShowAllHistory(true)} className="text-xs text-brand font-semibold mt-3">
+                Ver {history.length - HISTORY_PREVIEW_COUNT} sesiones anteriores más
+              </button>
+            )}
           </Card>
         )}
 

@@ -1,19 +1,24 @@
+import { useState } from 'react'
 import { useAppStore } from '../data/store'
 import { bestSet, prForExercise, bestE1RMForExercise, getExerciseHistory } from '../data/progression'
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
-import { formatWeight } from '../lib/format'
+import { formatDayLabel, formatWeight } from '../lib/format'
 import ExerciseMedia, { youtubeSearchUrl } from './ExerciseMedia'
 import Card from './Card'
 import type { Exercise } from '../types'
 
+const HISTORY_PREVIEW_COUNT = 4
+
 export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exercise; onClose: () => void }) {
   const { sessions } = useAppStore()
+  const [showAllHistory, setShowAllHistory] = useState(false)
   useBodyScrollLock(true)
 
   const history = getExerciseHistory(exercise.id, sessions)
   const pr = prForExercise(exercise.id, sessions)
   const best = history[0] ? bestSet(history[0].sets) : undefined
   const e1rm = bestE1RMForExercise(exercise.id, sessions)
+  const visibleHistory = showAllHistory ? history : history.slice(0, HISTORY_PREVIEW_COUNT)
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -72,6 +77,35 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
               <p className="font-bold tabular">{e1rm ? `${formatWeight(e1rm)} kg` : '—'}</p>
             </Card>
           </div>
+
+          {history.length > 0 && (
+            <Card>
+              <p className="text-sm font-bold mb-3">Historial</p>
+              <div className="flex flex-col gap-3">
+                {visibleHistory.map((h, i) => (
+                  <div key={h.date} className={i > 0 ? 'pt-3 border-t border-base-800' : ''}>
+                    <p className="text-xs text-base-500 mb-1.5">{formatDayLabel(h.date)}</p>
+                    <div className="flex flex-col gap-1">
+                      {h.sets.map((s, si) => (
+                        <div key={si} className="flex items-center justify-between text-sm tabular gap-2">
+                          <span className="text-base-500 shrink-0">Serie {si + 1}</span>
+                          <span className="font-semibold text-base-100 flex-1 text-right">
+                            {formatWeight(s.weight)} kg × {s.reps}
+                          </span>
+                          <span className="text-base-400 text-xs shrink-0">RIR {s.rir}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {!showAllHistory && history.length > HISTORY_PREVIEW_COUNT && (
+                <button onClick={() => setShowAllHistory(true)} className="text-xs text-brand font-semibold mt-3">
+                  Ver {history.length - HISTORY_PREVIEW_COUNT} sesiones anteriores más
+                </button>
+              )}
+            </Card>
+          )}
 
           <Card>
             <p className="text-sm font-bold mb-3">Instrucciones</p>
