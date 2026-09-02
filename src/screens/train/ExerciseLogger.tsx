@@ -100,33 +100,31 @@ export default function ExerciseLogger() {
       />
       {infoOpen && <ExerciseInfoModal exercise={exercise} onClose={() => setInfoOpen(false)} />}
       <div className="px-4 flex flex-col gap-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Card className="p-3">
-            <p className="text-xs text-base-500 mb-1">Objetivo de hoy</p>
-            <p className="font-bold text-base-100 tabular">
-              {sessionEx.targetSets} × {sessionEx.repMin}-{sessionEx.repMax}
-            </p>
-            {rirTarget && <p className="text-xs text-base-500 mt-0.5">RIR objetivo {rirTarget[0]}-{rirTarget[1]}</p>}
-          </Card>
-          <Card className="p-3">
-            <p className="text-xs text-base-500 mb-1">Última vez</p>
-            {lastPerformance ? (
-              <>
-                <p className="font-bold text-base-100 tabular">{formatWeight(lastPerformance.sets[0].weight)} kg</p>
-                <p className="text-xs text-base-500 tabular">{lastPerformance.sets.map((s) => s.reps).join(' / ')}</p>
-              </>
-            ) : (
-              <p className="text-sm text-base-500">Sin historial</p>
-            )}
-          </Card>
-        </div>
-
-        {recommendation && (
-          <Card className="bg-brand/5 border-brand/30">
-            <p className="text-xs text-brand font-semibold mb-1">Recomendación actual</p>
-            <p className="text-sm text-base-200">{recommendation.message}</p>
-          </Card>
-        )}
+        <Card>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs text-base-500 uppercase tracking-wide">Recomendación para hoy</p>
+            {rirTarget && <span className="text-xs text-base-500 shrink-0 whitespace-nowrap">RIR obj. {rirTarget[0]}-{rirTarget[1]}</span>}
+          </div>
+          <div className="grid grid-cols-3 gap-2 text-center mb-3">
+            <div>
+              <p className="text-[10px] text-base-500 uppercase mb-0.5">Series</p>
+              <p className="text-lg font-bold tabular text-base-100">{sessionEx.targetSets}</p>
+            </div>
+            <div>
+              <p className="text-[10px] text-base-500 uppercase mb-0.5">Reps</p>
+              <p className="text-lg font-bold tabular text-base-100">
+                {sessionEx.repMin}-{sessionEx.repMax}
+              </p>
+            </div>
+            <div>
+              <p className="text-[10px] text-base-500 uppercase mb-0.5">Peso sugerido</p>
+              <p className="text-lg font-bold tabular text-brand">
+                {recommendation?.recommendedWeight ? `${formatWeight(recommendation.recommendedWeight)} kg` : '—'}
+              </p>
+            </div>
+          </div>
+          {recommendation && <p className="text-xs text-base-400 pt-3 border-t border-base-800">{recommendation.message}</p>}
+        </Card>
 
         {warmup.length > 0 && (
           <Card>
@@ -141,26 +139,6 @@ export default function ExerciseLogger() {
             </div>
           </Card>
         )}
-
-        {sessionEx.sets.length > 0 && (
-          <Card>
-            <p className="text-xs text-base-500 mb-2">Series de hoy</p>
-            <div className="flex flex-col divide-y divide-base-800">
-              {sessionEx.sets.map((s, i) => (
-                <div key={i} className="py-2 flex items-center justify-between text-sm tabular">
-                  <span className="text-base-500">Serie {i + 1}</span>
-                  <span className="font-semibold text-base-100">{formatWeight(s.weight)} kg × {s.reps}</span>
-                  <span className="text-base-400">RIR {s.rir}</span>
-                </div>
-              ))}
-            </div>
-            <button onClick={removeLastSet} className="text-xs text-accent-push mt-2">
-              Deshacer última serie
-            </button>
-          </Card>
-        )}
-
-        <RestTimer trigger={restTrigger} />
 
         <Card className="border-base-700">
           <p className="text-sm font-bold mb-4">SERIE {setNumber}</p>
@@ -192,8 +170,30 @@ export default function ExerciseLogger() {
         </Card>
 
         <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate('/train/session')}>
-          Volver al entrenamiento
+          Terminar ejercicio
         </Button>
+
+        <RestTimer trigger={restTrigger} />
+
+        {sessionEx.sets.length > 0 && (
+          <Card>
+            <p className="text-xs text-base-500 mb-2">Series de hoy</p>
+            <div className="flex flex-col divide-y divide-base-800">
+              {sessionEx.sets.map((s, i) => (
+                <div key={i} className="py-2 flex items-center justify-between text-sm tabular gap-2">
+                  <span className="text-base-500 shrink-0">Serie {i + 1}</span>
+                  <span className="font-semibold text-base-100 flex-1 text-right">
+                    {formatWeight(s.weight)} kg × {s.reps}
+                  </span>
+                  <span className="text-base-400 shrink-0">RIR {s.rir}</span>
+                </div>
+              ))}
+            </div>
+            <button onClick={removeLastSet} className="text-xs text-accent-push mt-2">
+              Deshacer última serie
+            </button>
+          </Card>
+        )}
       </div>
     </div>
   )
