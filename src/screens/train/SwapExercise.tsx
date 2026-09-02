@@ -42,7 +42,7 @@ export default function SwapExercise() {
       sets: [],
     }
     setActiveWorkout({ ...activeWorkout!, exercises: exercises2 })
-    navigate('/train/session')
+    navigate('/train/session', { replace: true })
   }
 
   return (

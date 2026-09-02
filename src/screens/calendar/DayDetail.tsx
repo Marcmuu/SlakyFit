@@ -8,6 +8,7 @@ import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
+import ActionSheet from '../../components/ActionSheet'
 
 export default function DayDetail() {
   const { date } = useParams()
@@ -19,7 +20,7 @@ export default function DayDetail() {
 
   return (
     <div className="pb-8">
-      <PageHeader title={date ? formatDayLabel(date) : 'Día'} subtitle={date ? formatWeekday(date) : undefined} onBack />
+      <PageHeader title={date ? formatDayLabel(date) : 'Día'} subtitle={date ? formatWeekday(date) : undefined} onBack={() => navigate('/calendar')} />
       <div className="px-4 flex flex-col gap-4">
         {daySessions.length === 0 && (
           <Card className="text-center py-8">
@@ -90,27 +91,25 @@ export default function DayDetail() {
       </div>
 
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
-          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
-            <p className="text-lg font-bold mb-1">¿Eliminar este entrenamiento?</p>
-            <p className="text-sm text-base-400 mb-4">Se borrarán todos los ejercicios y series registrados este día. No se puede deshacer.</p>
-            <div className="flex flex-col gap-2.5">
-              <Button
-                variant="danger"
-                size="lg"
-                onClick={() => {
-                  deleteSession(confirmDeleteId)
-                  setConfirmDeleteId(null)
-                }}
-              >
-                Eliminar entrenamiento
-              </Button>
-              <Button variant="ghost" onClick={() => setConfirmDeleteId(null)}>
-                Cancelar
-              </Button>
-            </div>
+        <ActionSheet onDismiss={() => setConfirmDeleteId(null)}>
+          <p className="text-lg font-bold mb-1">¿Eliminar este entrenamiento?</p>
+          <p className="text-sm text-base-400 mb-5">Se borrarán todos los ejercicios y series registrados este día. No se puede deshacer.</p>
+          <div className="flex flex-col gap-2.5">
+            <Button
+              variant="danger"
+              size="lg"
+              onClick={() => {
+                deleteSession(confirmDeleteId)
+                setConfirmDeleteId(null)
+              }}
+            >
+              Eliminar entrenamiento
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setConfirmDeleteId(null)}>
+              Cancelar
+            </Button>
           </div>
-        </div>
+        </ActionSheet>
       )}
     </div>
   )

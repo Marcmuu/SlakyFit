@@ -83,7 +83,7 @@ export default function ExerciseLogger() {
     <div className="pb-10">
       <PageHeader
         title={exercise.name}
-        onBack={() => navigate('/train/session')}
+        onBack={() => navigate('/train/session', { replace: true })}
         right={
           <button
             onClick={() => setInfoOpen(true)}
@@ -169,7 +169,7 @@ export default function ExerciseLogger() {
           </Button>
         </Card>
 
-        <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate('/train/session')}>
+        <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate('/train/session', { replace: true })}>
           Terminar ejercicio
         </Button>
 

@@ -6,6 +6,7 @@ import { newId } from '../../lib/id'
 import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
+import ActionSheet from '../../components/ActionSheet'
 import type { SessionExercise, WorkoutSession } from '../../types'
 
 export default function ActiveWorkout() {
@@ -13,7 +14,6 @@ export default function ActiveWorkout() {
   const navigate = useNavigate()
   const [showFinish, setShowFinish] = useState(false)
   const [showDiscard, setShowDiscard] = useState(false)
-  const [notes, setNotes] = useState('')
   useBodyScrollLock(showFinish || showDiscard)
 
   useEffect(() => {
@@ -55,7 +55,6 @@ export default function ActiveWorkout() {
       dayColor: activeWorkout!.dayColor,
       durationMin: Math.max(1, Math.round((Date.now() - new Date(activeWorkout!.startedAt).getTime()) / 60000)),
       exercises,
-      notes: notes.trim() || undefined,
     }
     addSession(session)
     setActiveWorkout(null)
@@ -95,12 +94,31 @@ export default function ActiveWorkout() {
         {activeWorkout.exercises.map((sessionEx, index) => {
           const exercise = getExercise(sessionEx.exerciseId)!
           const done = sessionEx.sets.length
-          const started = done > 0
+          const partial = done > 0 && done < sessionEx.targetSets
           const completed = done >= sessionEx.targetSets
+
+          if (completed) {
+            return (
+              <Card key={`${sessionEx.exerciseId}-${index}`} className="p-0 border-brand/50 bg-brand/5 overflow-hidden">
+                <button className="w-full flex items-center gap-3 px-3 py-2.5" onClick={() => navigate(`/train/session/exercise/${index}`)}>
+                  <span className="w-5 h-5 rounded-full bg-brand text-base-950 flex items-center justify-center shrink-0" aria-hidden>
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </span>
+                  <span className="flex-1 min-w-0 truncate text-sm font-medium text-base-200">{exercise.name}</span>
+                  <span className="text-xs text-brand font-semibold tabular shrink-0">
+                    {done}/{sessionEx.targetSets}
+                  </span>
+                </button>
+              </Card>
+            )
+          }
+
           return (
             <Card
               key={`${sessionEx.exerciseId}-${index}`}
-              className={`p-3 transition-colors ${started ? 'border-brand/50 bg-brand/5' : ''}`}
+              className={`p-3 transition-colors ${partial ? 'border-accent-warning/50 bg-accent-warning/5' : ''}`}
             >
               <div className="flex items-center gap-3">
                 <div className="flex flex-col gap-1">
@@ -119,10 +137,12 @@ export default function ActiveWorkout() {
                     ▼
                   </button>
                 </div>
-                {started && (
-                  <span className="w-5 h-5 rounded-full bg-brand text-base-950 flex items-center justify-center shrink-0" aria-hidden>
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+                {partial && (
+                  <span className="w-5 h-5 rounded-full bg-accent-warning text-base-950 flex items-center justify-center shrink-0" aria-hidden>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M12 3 2 20h20L12 3Z" strokeLinejoin="round" />
+                      <path d="M12 10v4" strokeLinecap="round" />
+                      <circle cx="12" cy="17" r="0.6" fill="currentColor" stroke="none" />
                     </svg>
                   </span>
                 )}
@@ -132,7 +152,7 @@ export default function ActiveWorkout() {
                     {sessionEx.isExtra && <span className="text-[10px] font-bold text-brand bg-brand/10 px-1.5 py-0.5 rounded-full shrink-0">EXTRA</span>}
                     {sessionEx.originalExerciseId && <span className="text-[10px] font-bold text-accent-pull bg-accent-pull/10 px-1.5 py-0.5 rounded-full shrink-0">SUSTITUIDO</span>}
                   </div>
-                  <p className={`text-xs mt-0.5 tabular ${completed ? 'text-brand font-semibold' : started ? 'text-brand/80' : 'text-base-500'}`}>
+                  <p className={`text-xs mt-0.5 tabular ${partial ? 'text-accent-warning font-semibold' : 'text-base-500'}`}>
                     {done}/{sessionEx.targetSets} series · {sessionEx.repMin}-{sessionEx.repMax} reps
                   </p>
                 </button>
@@ -163,48 +183,37 @@ export default function ActiveWorkout() {
       </div>
 
       {showFinish && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
-          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
-            <p className="text-lg font-bold mb-1">¿Terminar aquí?</p>
-            <p className="text-sm text-base-400 mb-4">
-              Se guardará el entrenamiento con las series registradas. Si te falta algún ejercicio, usa "+ Añadir ejercicio" antes de finalizar.
-            </p>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Notas de la sesión (opcional)"
-              className="w-full bg-base-800 border border-base-700 rounded-xl p-3 text-sm text-base-100 mb-4 resize-none"
-              rows={2}
-            />
-            <div className="flex flex-col gap-2.5">
-              <Button size="lg" onClick={finish}>
-                Finalizar y guardar
-              </Button>
-              <Button variant="ghost" onClick={() => setShowFinish(false)}>
-                Seguir entrenando
-              </Button>
-            </div>
+        <ActionSheet onDismiss={() => setShowFinish(false)}>
+          <p className="text-lg font-bold mb-1">¿Terminar aquí?</p>
+          <p className="text-sm text-base-400 mb-5">
+            Se guardará el entrenamiento con las series registradas. Si te falta algún ejercicio, usa "+ Añadir ejercicio" antes de finalizar.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Button size="lg" onClick={finish}>
+              Finalizar y guardar
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setShowFinish(false)}>
+              Seguir entrenando
+            </Button>
           </div>
-        </div>
+        </ActionSheet>
       )}
 
       {showDiscard && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
-          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
-            <p className="text-lg font-bold mb-1">¿Cerrar sin guardar?</p>
-            <p className="text-sm text-base-400 mb-4">
-              Se perderán todas las series registradas en este entrenamiento. Si quieres seguir más tarde, usa el gesto de deslizar hacia abajo en vez de cerrar.
-            </p>
-            <div className="flex flex-col gap-2.5">
-              <Button variant="danger" size="lg" onClick={discard}>
-                Cerrar sin guardar
-              </Button>
-              <Button variant="ghost" onClick={() => setShowDiscard(false)}>
-                Volver al entrenamiento
-              </Button>
-            </div>
+        <ActionSheet onDismiss={() => setShowDiscard(false)}>
+          <p className="text-lg font-bold mb-1">¿Cerrar sin guardar?</p>
+          <p className="text-sm text-base-400 mb-5">
+            Se perderán todas las series registradas en este entrenamiento. Si quieres seguir más tarde, usa el gesto de deslizar hacia abajo en vez de cerrar.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Button variant="danger" size="lg" onClick={discard}>
+              Cerrar sin guardar
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setShowDiscard(false)}>
+              Volver al entrenamiento
+            </Button>
           </div>
-        </div>
+        </ActionSheet>
       )}
     </div>
   )

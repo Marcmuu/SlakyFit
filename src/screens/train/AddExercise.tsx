@@ -33,7 +33,7 @@ export default function AddExercise() {
       sets: [],
     }
     setActiveWorkout({ ...activeWorkout!, exercises: [...activeWorkout!.exercises, next] })
-    navigate('/train/session')
+    navigate('/train/session', { replace: true })
   }
 
   return (

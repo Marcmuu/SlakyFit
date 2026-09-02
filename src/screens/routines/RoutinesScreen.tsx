@@ -6,6 +6,7 @@ import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
+import ActionSheet from '../../components/ActionSheet'
 import type { Routine } from '../../types'
 
 export default function RoutinesScreen() {
@@ -99,29 +100,27 @@ export default function RoutinesScreen() {
       </div>
 
       {routineToDelete && (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
-          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
-            <p className="text-lg font-bold mb-1">¿Eliminar "{routineToDelete.name}"?</p>
-            <p className="text-sm text-base-400 mb-4">
-              Se borrará la rutina y sus días. Los entrenamientos que ya registraste con ella no se ven afectados.
-            </p>
-            <div className="flex flex-col gap-2.5">
-              <Button
-                variant="danger"
-                size="lg"
-                onClick={() => {
-                  deleteRoutine(routineToDelete.id)
-                  setConfirmDeleteId(null)
-                }}
-              >
-                Eliminar rutina
-              </Button>
-              <Button variant="ghost" onClick={() => setConfirmDeleteId(null)}>
-                Cancelar
-              </Button>
-            </div>
+        <ActionSheet onDismiss={() => setConfirmDeleteId(null)}>
+          <p className="text-lg font-bold mb-1">¿Eliminar "{routineToDelete.name}"?</p>
+          <p className="text-sm text-base-400 mb-5">
+            Se borrará la rutina y sus días. Los entrenamientos que ya registraste con ella no se ven afectados.
+          </p>
+          <div className="flex flex-col gap-2.5">
+            <Button
+              variant="danger"
+              size="lg"
+              onClick={() => {
+                deleteRoutine(routineToDelete.id)
+                setConfirmDeleteId(null)
+              }}
+            >
+              Eliminar rutina
+            </Button>
+            <Button variant="secondary" size="lg" onClick={() => setConfirmDeleteId(null)}>
+              Cancelar
+            </Button>
           </div>
-        </div>
+        </ActionSheet>
       )}
     </div>
   )

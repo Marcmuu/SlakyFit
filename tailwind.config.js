@@ -27,6 +27,7 @@ export default {
           push: '#ff6b57',
           pull: '#4fb0ff',
           legs: '#c4ff3d',
+          warning: '#f5a623',
         },
       },
       fontFamily: {
