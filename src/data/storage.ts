@@ -31,3 +31,43 @@ export const STORAGE_KEYS = {
   activeWorkout: 'activeWorkout',
   seeded: 'seeded-v2',
 } as const
+
+const EXPORT_FORMAT = 'slakyfit-backup'
+const EXPORT_VERSION = 1
+
+export interface SlakyFitBackup {
+  app: typeof EXPORT_FORMAT
+  version: number
+  exportedAt: string
+  data: Record<string, unknown>
+}
+
+export function exportAllData(): SlakyFitBackup {
+  const data: Record<string, unknown> = {}
+  for (const [name, key] of Object.entries(STORAGE_KEYS)) {
+    const raw = localStorage.getItem(PREFIX + key)
+    if (raw === null) continue
+    try {
+      data[name] = JSON.parse(raw)
+    } catch {
+      // entrada corrupta, se omite del backup
+    }
+  }
+  return { app: EXPORT_FORMAT, version: EXPORT_VERSION, exportedAt: new Date().toISOString(), data }
+}
+
+export function importAllData(payload: unknown): void {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error('El archivo no tiene un formato válido.')
+  }
+  const backup = payload as Partial<SlakyFitBackup>
+  if (backup.app !== EXPORT_FORMAT || !backup.data || typeof backup.data !== 'object') {
+    throw new Error('Este archivo no es una copia de seguridad de SlakyFit.')
+  }
+  for (const [name, key] of Object.entries(STORAGE_KEYS)) {
+    const value = (backup.data as Record<string, unknown>)[name]
+    if (value !== undefined) {
+      localStorage.setItem(PREFIX + key, JSON.stringify(value))
+    }
+  }
+}
