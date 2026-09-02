@@ -25,6 +25,7 @@ const ExerciseDetail = lazy(() => import('./screens/library/ExerciseDetail'))
 const RoutinesScreen = lazy(() => import('./screens/routines/RoutinesScreen'))
 const RoutineEditor = lazy(() => import('./screens/routines/RoutineEditor'))
 const DayEditor = lazy(() => import('./screens/routines/DayEditor'))
+const SessionEditor = lazy(() => import('./screens/calendar/SessionEditor'))
 
 const FULLSCREEN_PREFIXES = ['/train/session']
 const MINIMIZE_THRESHOLD_PX = 70
@@ -76,6 +77,8 @@ export default function App() {
             <Route path="/train/session/add" element={<AddExercise />} />
             <Route path="/calendar" element={<Calendar />} />
             <Route path="/calendar/:date" element={<DayDetail />} />
+            <Route path="/calendar/:date/session/new" element={<SessionEditor />} />
+            <Route path="/session/:sessionId/edit" element={<SessionEditor />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/library" element={<Library />} />
             <Route path="/library/:exerciseId" element={<ExerciseDetail />} />

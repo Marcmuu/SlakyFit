@@ -8,6 +8,8 @@ import { migrateRirIfNeeded } from './migrateRir'
 interface AppStoreValue {
   sessions: WorkoutSession[]
   addSession: (session: WorkoutSession) => void
+  updateSession: (session: WorkoutSession) => void
+  deleteSession: (id: string) => void
   profile: Profile
   updateProfile: (profile: Profile) => void
   goals: Goal[]
@@ -72,6 +74,8 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     () => ({
       sessions,
       addSession: (session) => setSessions((prev) => [...prev, session]),
+      updateSession: (session) => setSessions((prev) => prev.map((s) => (s.id === session.id ? session : s))),
+      deleteSession: (id) => setSessions((prev) => prev.filter((s) => s.id !== id)),
       profile,
       updateProfile: setProfile,
       goals,

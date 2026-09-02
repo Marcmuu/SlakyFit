@@ -1,18 +1,24 @@
-import { useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
 import { prForExercise, computeE1RM } from '../../data/progression'
 import { formatDayLabel, formatWeekday, formatWeight } from '../../lib/format'
+import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
+import Button from '../../components/Button'
 
 export default function DayDetail() {
   const { date } = useParams()
-  const { sessions } = useAppStore()
+  const { sessions, deleteSession } = useAppStore()
+  const navigate = useNavigate()
   const daySessions = sessions.filter((s) => s.date === date)
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  useBodyScrollLock(confirmDeleteId !== null)
 
   return (
-    <div>
+    <div className="pb-8">
       <PageHeader title={date ? formatDayLabel(date) : 'Día'} subtitle={date ? formatWeekday(date) : undefined} onBack />
       <div className="px-4 flex flex-col gap-4">
         {daySessions.length === 0 && (
@@ -30,6 +36,14 @@ export default function DayDetail() {
                 {session.durationMin && <span className="text-xs text-base-500 tabular">{session.durationMin} min</span>}
               </div>
               {session.notes && <p className="text-sm text-base-400 mt-2">"{session.notes}"</p>}
+              <div className="flex gap-4 mt-3 pt-3 border-t border-base-800 text-xs font-semibold">
+                <button className="text-brand" onClick={() => navigate(`/session/${session.id}/edit`)}>
+                  Editar
+                </button>
+                <button className="text-accent-push" onClick={() => setConfirmDeleteId(session.id)}>
+                  Eliminar
+                </button>
+              </div>
             </Card>
 
             {session.exercises.map((sessionEx, i) => {
@@ -67,7 +81,37 @@ export default function DayDetail() {
             })}
           </div>
         ))}
+
+        {date && (
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate(`/calendar/${date}/session/new`)}>
+            + Añadir entrenamiento a este día
+          </Button>
+        )}
       </div>
+
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
+            <p className="text-lg font-bold mb-1">¿Eliminar este entrenamiento?</p>
+            <p className="text-sm text-base-400 mb-4">Se borrarán todos los ejercicios y series registrados este día. No se puede deshacer.</p>
+            <div className="flex flex-col gap-2.5">
+              <Button
+                variant="danger"
+                size="lg"
+                onClick={() => {
+                  deleteSession(confirmDeleteId)
+                  setConfirmDeleteId(null)
+                }}
+              >
+                Eliminar entrenamiento
+              </Button>
+              <Button variant="ghost" onClick={() => setConfirmDeleteId(null)}>
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

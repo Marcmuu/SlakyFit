@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { currentWeekDates } from '../lib/dateGrid'
 import { todayIso } from '../lib/format'
 import { readableTextColor } from '../lib/color'
@@ -6,6 +7,7 @@ import type { WorkoutSession } from '../types'
 const LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
 export default function WeekStrip({ sessions }: { sessions: WorkoutSession[] }) {
+  const navigate = useNavigate()
   const dates = currentWeekDates()
   const today = todayIso()
   const byDate = new Map<string, WorkoutSession>()
@@ -18,7 +20,7 @@ export default function WeekStrip({ sessions }: { sessions: WorkoutSession[] }) 
         const isToday = date === today
         const isFuture = date > today
         return (
-          <div key={date} className="flex flex-col items-center gap-1.5">
+          <button key={date} onClick={() => navigate(`/calendar/${date}`)} className="flex flex-col items-center gap-1.5">
             <span className="text-[10px] text-base-500 font-semibold">{LABELS[i]}</span>
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold tabular border ${
@@ -30,7 +32,7 @@ export default function WeekStrip({ sessions }: { sessions: WorkoutSession[] }) 
                 {Number(date.slice(-2))}
               </span>
             </div>
-          </div>
+          </button>
         )
       })}
     </div>
