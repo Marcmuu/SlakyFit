@@ -1,9 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import type { User } from '@supabase/supabase-js'
 import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout, Routine } from '../types'
 import { loadItem, saveItem, hasItem, STORAGE_KEYS } from './storage'
 import { generateDemoData } from './demoSeed'
 import { migrateRoutinesIfNeeded } from './migrateRoutines'
 import { migrateRirIfNeeded } from './migrateRir'
+import { supabase } from './supabaseClient'
+import { pushCloudState } from './cloudSync'
 
 interface AppStoreValue {
   sessions: WorkoutSession[]
@@ -27,6 +30,11 @@ interface AppStoreValue {
   deleteRoutine: (id: string) => void
   activeRoutineId: string | null
   setActiveRoutineId: (id: string | null) => void
+  user: User | null
+  authReady: boolean
+  lastSyncedAt: string | null
+  syncing: boolean
+  syncNow: () => Promise<void>
 }
 
 const AppStoreContext = createContext<AppStoreValue | undefined>(undefined)
@@ -61,6 +69,49 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [activeRoutineId, setActiveRoutineIdState] = useState<string | null>(() =>
     loadItem(STORAGE_KEYS.activeRoutineId, null),
   )
+
+  const [user, setUser] = useState<User | null>(null)
+  const [authReady, setAuthReady] = useState(!supabase)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => loadItem('lastSyncedAt', null))
+  const [syncing, setSyncing] = useState(false)
+
+  useEffect(() => {
+    if (!supabase) return
+    supabase.auth.getSession().then(({ data }) => {
+      setUser(data.session?.user ?? null)
+      setAuthReady(true)
+    })
+    const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.subscription.unsubscribe()
+  }, [])
+
+  async function syncNow() {
+    if (!user) return
+    setSyncing(true)
+    try {
+      await pushCloudState(user.id)
+      const now = new Date().toISOString()
+      setLastSyncedAt(now)
+      saveItem('lastSyncedAt', now)
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  // Empuja el estado completo a la nube ~1.5s después del último cambio,
+  // solo si hay sesión iniciada. Sin cuenta, la app sigue siendo puramente local.
+  useEffect(() => {
+    if (!user) return
+    const timeout = setTimeout(() => {
+      syncNow().catch(() => {
+        // Sin conexión o error puntual: se reintentará en el siguiente cambio.
+      })
+    }, 1500)
+    return () => clearTimeout(timeout)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, sessions, profile, goals, bodyMetrics, routines, activeRoutineId])
 
   useEffect(() => saveItem(STORAGE_KEYS.sessions, sessions), [sessions])
   useEffect(() => saveItem(STORAGE_KEYS.profile, profile), [profile])
@@ -98,8 +149,14 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       },
       activeRoutineId,
       setActiveRoutineId: setActiveRoutineIdState,
+      user,
+      authReady,
+      lastSyncedAt,
+      syncing,
+      syncNow,
     }),
-    [sessions, profile, goals, bodyMetrics, program, activeWorkout, routines, activeRoutineId],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [sessions, profile, goals, bodyMetrics, program, activeWorkout, routines, activeRoutineId, user, authReady, lastSyncedAt, syncing],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>
