@@ -49,7 +49,15 @@ export default function RoutinesScreen() {
 
   return (
     <div className="pb-8">
-      <PageHeader title="Mis rutinas" onBack />
+      <PageHeader
+        title="Mis rutinas"
+        onBack
+        right={
+          <button onClick={() => navigate('/routines/analyze')} className="text-xs font-semibold text-brand shrink-0">
+            Analizar
+          </button>
+        }
+      />
       <div className="px-4 flex flex-col gap-3">
         {routines.length === 0 && (
           <Card className="text-center py-8">

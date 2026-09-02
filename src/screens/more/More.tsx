@@ -4,6 +4,7 @@ import Card from '../../components/Card'
 
 const items = [
   { to: '/routines', label: 'Mis rutinas', desc: 'Crea, edita y activa tus rutinas' },
+  { to: '/routines/analyze', label: 'Analizar rutina', desc: 'Volumen por músculo y ejercicios estancados' },
   { to: '/more/section/abs', label: 'ABS', desc: 'Rutinas y ejercicios de core' },
   { to: '/more/section/mobility', label: 'Movilidad', desc: 'Antes de entrenar' },
   { to: '/more/section/flexibility', label: 'Flexibilidad', desc: 'Estiramientos por zona' },
