@@ -10,6 +10,7 @@ import ExerciseInfoModal from '../../components/ExerciseInfoModal'
 import Card from '../../components/Card'
 import Stepper from '../../components/Stepper'
 import RIRSelector from '../../components/RIRSelector'
+import RestTimer from '../../components/RestTimer'
 import Button from '../../components/Button'
 import { formatWeight } from '../../lib/format'
 import { nearestRirRange } from '../../lib/rir'
@@ -51,6 +52,7 @@ export default function ExerciseLogger() {
   const [weight, setWeight] = useState(defaultWeight)
   const [reps, setReps] = useState(defaultReps)
   const [rir, setRir] = useState<RirRange>(defaultRir)
+  const [restTrigger, setRestTrigger] = useState(0)
 
   if (!activeWorkout || !sessionEx || !exercise) {
     return (
@@ -66,6 +68,7 @@ export default function ExerciseLogger() {
     const exercises = [...activeWorkout!.exercises]
     exercises[idx] = { ...exercises[idx], sets: [...exercises[idx].sets, entry] }
     setActiveWorkout({ ...activeWorkout!, exercises })
+    setRestTrigger((t) => t + 1)
   }
 
   function removeLastSet() {
@@ -156,6 +159,8 @@ export default function ExerciseLogger() {
             </button>
           </Card>
         )}
+
+        <RestTimer trigger={restTrigger} />
 
         <Card className="border-base-700">
           <p className="text-sm font-bold mb-4">SERIE {setNumber}</p>
