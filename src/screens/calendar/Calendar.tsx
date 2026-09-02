@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { categoryMeta } from '../../lib/categoryMeta'
 import { formatMonthLabel, todayIso } from '../../lib/format'
 import { isoOf } from '../../lib/dateGrid'
 import PageHeader from '../../components/PageHeader'
@@ -9,8 +8,9 @@ import PageHeader from '../../components/PageHeader'
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
 export default function Calendar() {
-  const { sessions } = useAppStore()
+  const { sessions, routines, activeRoutineId } = useAppStore()
   const navigate = useNavigate()
+  const activeRoutine = routines.find((r) => r.id === activeRoutineId)
   const [cursor, setCursor] = useState(() => {
     const t = new Date()
     return new Date(t.getFullYear(), t.getMonth(), 1)
@@ -77,7 +77,7 @@ export default function Calendar() {
                 {daySessions && (
                   <div className="flex gap-0.5">
                     {daySessions.slice(0, 3).map((s, si) => (
-                      <span key={si} className={`w-1.5 h-1.5 rounded-full ${categoryMeta[s.actualCategory].color}`} />
+                      <span key={si} className="w-1.5 h-1.5 rounded-full" style={{ background: s.dayColor }} />
                     ))}
                   </div>
                 )}
@@ -86,14 +86,16 @@ export default function Calendar() {
           })}
         </div>
 
-        <div className="flex gap-4 mt-5 justify-center text-xs text-base-400">
-          {(['push', 'pull', 'legs'] as const).map((cat) => (
-            <div key={cat} className="flex items-center gap-1.5">
-              <span className={`w-2 h-2 rounded-full ${categoryMeta[cat].color}`} />
-              {categoryMeta[cat].label}
-            </div>
-          ))}
-        </div>
+        {activeRoutine && (
+          <div className="flex gap-4 mt-5 justify-center flex-wrap text-xs text-base-400">
+            {activeRoutine.days.map((day) => (
+              <div key={day.id} className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full" style={{ background: day.color }} />
+                {day.name}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

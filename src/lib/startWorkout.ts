@@ -1,12 +1,13 @@
-import type { ActiveWorkout, RoutineTemplate } from '../types'
+import type { ActiveWorkout, Routine, RoutineDay } from '../types'
 
-export function buildActiveWorkout(template: RoutineTemplate): ActiveWorkout {
+export function buildActiveWorkout(routine: Routine, day: RoutineDay): ActiveWorkout {
   return {
-    recommendedTemplateId: template.id,
-    category: template.category,
-    variant: template.variant,
+    routineId: routine.id,
+    dayId: day.id,
+    dayName: day.name,
+    dayColor: day.color,
     startedAt: new Date().toISOString(),
-    exercises: template.items
+    exercises: day.exercises
       .slice()
       .sort((a, b) => a.order - b.order)
       .map((item) => ({

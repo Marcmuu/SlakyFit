@@ -2,7 +2,6 @@ import { useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
 import { prForExercise, computeE1RM } from '../../data/progression'
-import { templateLabel } from '../../lib/categoryMeta'
 import { formatDayLabel, formatWeekday, formatWeight } from '../../lib/format'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
@@ -25,12 +24,12 @@ export default function DayDetail() {
         {daySessions.map((session) => (
           <div key={session.id} className="flex flex-col gap-3">
             <Card>
-              <div className="flex items-center justify-between mb-1">
-                <h2 className="text-xl font-extrabold">{templateLabel(session.actualCategory, session.actualVariant)}</h2>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: session.dayColor }} />
+                <h2 className="text-xl font-extrabold flex-1">{session.dayName}</h2>
                 {session.durationMin && <span className="text-xs text-base-500 tabular">{session.durationMin} min</span>}
               </div>
               {session.notes && <p className="text-sm text-base-400 mt-2">"{session.notes}"</p>}
-              {session.includedAbs && <p className="text-xs text-brand mt-2 font-semibold">+ ABS añadido al final</p>}
             </Card>
 
             {session.exercises.map((sessionEx, i) => {

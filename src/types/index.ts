@@ -86,13 +86,13 @@ export interface SessionExercise {
 export interface WorkoutSession {
   id: string
   date: string
-  recommendedTemplateId: string | null
-  actualCategory: Category
-  actualVariant: Variant
+  routineId: string | null
+  dayId: string | null
+  dayName: string
+  dayColor: string
   durationMin?: number
   notes?: string
   exercises: SessionExercise[]
-  includedAbs?: boolean
 }
 
 export interface BodyMetric {
@@ -152,9 +152,35 @@ export interface ActiveWorkoutExercise {
 }
 
 export interface ActiveWorkout {
-  recommendedTemplateId: string | null
-  category: Category
-  variant: Variant
+  routineId: string
+  dayId: string
+  dayName: string
+  dayColor: string
   startedAt: string
   exercises: ActiveWorkoutExercise[]
+}
+
+export interface RoutineDayExercise {
+  id: string
+  exerciseId: string
+  order: number
+  targetSets: number
+  repMin: number
+  repMax: number
+}
+
+export interface RoutineDay {
+  id: string
+  name: string
+  order: number
+  color: string
+  exercises: RoutineDayExercise[]
+}
+
+export interface Routine {
+  id: string
+  name: string
+  days: RoutineDay[]
+  createdAt: string
+  updatedAt: string
 }

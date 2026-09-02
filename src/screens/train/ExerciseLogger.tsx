@@ -6,7 +6,6 @@ import { recommendNextWeight, getLastPerformance, generateWarmup } from '../../d
 import { currentPhase } from '../../lib/programWeek'
 import { rirTargetForExercise } from '../../data/phases'
 import PageHeader from '../../components/PageHeader'
-import ExerciseMedia from '../../components/ExerciseMedia'
 import ExerciseInfoModal from '../../components/ExerciseInfoModal'
 import Card from '../../components/Card'
 import Stepper from '../../components/Stepper'
@@ -95,8 +94,6 @@ export default function ExerciseLogger() {
       />
       {infoOpen && <ExerciseInfoModal exercise={exercise} onClose={() => setInfoOpen(false)} />}
       <div className="px-4 flex flex-col gap-4">
-        <ExerciseMedia exercise={exercise} />
-
         <div className="grid grid-cols-2 gap-3">
           <Card className="p-3">
             <p className="text-xs text-base-500 mb-1">Objetivo de hoy</p>

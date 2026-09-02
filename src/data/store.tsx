@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout } from '../types'
+import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout, Routine } from '../types'
 import { loadItem, saveItem, hasItem, STORAGE_KEYS } from './storage'
 import { generateDemoData } from './demoSeed'
+import { migrateRoutinesIfNeeded } from './migrateRoutines'
 
 interface AppStoreValue {
   sessions: WorkoutSession[]
@@ -17,6 +18,12 @@ interface AppStoreValue {
   program: Program
   activeWorkout: ActiveWorkout | null
   setActiveWorkout: (workout: ActiveWorkout | null) => void
+  routines: Routine[]
+  addRoutine: (routine: Routine) => void
+  updateRoutine: (routine: Routine) => void
+  deleteRoutine: (id: string) => void
+  activeRoutineId: string | null
+  setActiveRoutineId: (id: string | null) => void
 }
 
 const AppStoreContext = createContext<AppStoreValue | undefined>(undefined)
@@ -33,6 +40,7 @@ function initializeSeed() {
 }
 
 initializeSeed()
+migrateRoutinesIfNeeded()
 
 export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [sessions, setSessions] = useState<WorkoutSession[]>(() => loadItem(STORAGE_KEYS.sessions, []))
@@ -45,12 +53,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [activeWorkout, setActiveWorkoutState] = useState<ActiveWorkout | null>(() =>
     loadItem(STORAGE_KEYS.activeWorkout, null),
   )
+  const [routines, setRoutines] = useState<Routine[]>(() => loadItem(STORAGE_KEYS.routines, []))
+  const [activeRoutineId, setActiveRoutineIdState] = useState<string | null>(() =>
+    loadItem(STORAGE_KEYS.activeRoutineId, null),
+  )
 
   useEffect(() => saveItem(STORAGE_KEYS.sessions, sessions), [sessions])
   useEffect(() => saveItem(STORAGE_KEYS.profile, profile), [profile])
   useEffect(() => saveItem(STORAGE_KEYS.goals, goals), [goals])
   useEffect(() => saveItem(STORAGE_KEYS.bodyMetrics, bodyMetrics), [bodyMetrics])
   useEffect(() => saveItem(STORAGE_KEYS.activeWorkout, activeWorkout), [activeWorkout])
+  useEffect(() => saveItem(STORAGE_KEYS.routines, routines), [routines])
+  useEffect(() => saveItem(STORAGE_KEYS.activeRoutineId, activeRoutineId), [activeRoutineId])
 
   const value = useMemo<AppStoreValue>(
     () => ({
@@ -68,8 +82,18 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       program,
       activeWorkout,
       setActiveWorkout: setActiveWorkoutState,
+      routines,
+      addRoutine: (routine) => setRoutines((prev) => [...prev, routine]),
+      updateRoutine: (routine) => setRoutines((prev) => prev.map((r) => (r.id === routine.id ? routine : r))),
+      deleteRoutine: (id) => {
+        const remaining = routines.filter((r) => r.id !== id)
+        setRoutines(remaining)
+        if (activeRoutineId === id) setActiveRoutineIdState(remaining[0]?.id ?? null)
+      },
+      activeRoutineId,
+      setActiveRoutineId: setActiveRoutineIdState,
     }),
-    [sessions, profile, goals, bodyMetrics, program, activeWorkout],
+    [sessions, profile, goals, bodyMetrics, program, activeWorkout, routines, activeRoutineId],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>

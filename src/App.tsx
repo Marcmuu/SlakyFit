@@ -1,5 +1,5 @@
-import { lazy, Suspense } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { lazy, Suspense, useRef } from 'react'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import BottomNav from './components/BottomNav'
 import Dashboard from './screens/Dashboard'
 import SelectWorkout from './screens/train/SelectWorkout'
@@ -22,7 +22,41 @@ import SettingsScreen from './screens/more/SettingsScreen'
 const Progress = lazy(() => import('./screens/progress/Progress'))
 const ExerciseDetail = lazy(() => import('./screens/library/ExerciseDetail'))
 
+const RoutinesScreen = lazy(() => import('./screens/routines/RoutinesScreen'))
+const RoutineEditor = lazy(() => import('./screens/routines/RoutineEditor'))
+const DayEditor = lazy(() => import('./screens/routines/DayEditor'))
+
 const FULLSCREEN_PREFIXES = ['/train/session']
+const MINIMIZE_THRESHOLD_PX = 70
+
+function FullscreenDragHandle() {
+  const navigate = useNavigate()
+  const startY = useRef<number | null>(null)
+
+  return (
+    <div
+      className="pt-[calc(env(safe-area-inset-top)+0.5rem)] pb-1.5 flex justify-center shrink-0"
+      style={{ touchAction: 'none' }}
+      onTouchStart={(e) => {
+        startY.current = e.touches[0].clientY
+      }}
+      onTouchMove={(e) => {
+        if (startY.current === null) return
+        const delta = e.touches[0].clientY - startY.current
+        if (delta > MINIMIZE_THRESHOLD_PX) {
+          startY.current = null
+          navigate('/')
+        }
+      }}
+      onTouchEnd={() => {
+        startY.current = null
+      }}
+      aria-label="Deslizar hacia abajo para minimizar"
+    >
+      <span className="w-10 h-1.5 rounded-full bg-base-700" aria-hidden />
+    </div>
+  )
+}
 
 export default function App() {
   const location = useLocation()
@@ -31,6 +65,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-base-950 text-base-100">
       <div className={`max-w-md mx-auto min-h-screen relative ${isFullscreen ? '' : 'pb-24'}`}>
+        {isFullscreen && <FullscreenDragHandle />}
         <Suspense fallback={<div className="p-4 text-base-400 text-sm">Cargando…</div>}>
           <Routes>
             <Route path="/" element={<Dashboard />} />
@@ -44,6 +79,9 @@ export default function App() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/library" element={<Library />} />
             <Route path="/library/:exerciseId" element={<ExerciseDetail />} />
+            <Route path="/routines" element={<RoutinesScreen />} />
+            <Route path="/routines/:routineId" element={<RoutineEditor />} />
+            <Route path="/routines/:routineId/day/:dayId" element={<DayEditor />} />
             <Route path="/more" element={<More />} />
             <Route path="/more/section/:section" element={<RoutineListScreen />} />
             <Route path="/more/routine/:id" element={<RoutineListDetail />} />

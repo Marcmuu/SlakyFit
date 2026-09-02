@@ -3,6 +3,7 @@ import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 
 const items = [
+  { to: '/routines', label: 'Mis rutinas', desc: 'Crea, edita y activa tus rutinas' },
   { to: '/more/section/abs', label: 'ABS', desc: 'Rutinas y ejercicios de core' },
   { to: '/more/section/mobility', label: 'Movilidad', desc: 'Antes de entrenar' },
   { to: '/more/section/flexibility', label: 'Flexibilidad', desc: 'Estiramientos por zona' },

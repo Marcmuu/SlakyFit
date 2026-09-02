@@ -1,11 +1,9 @@
 import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../data/store'
-import { getLastWorkoutSession, getRecommendedTemplateId, countSessionsThisWeek } from '../data/recommendation'
-import { getRoutineTemplate } from '../data/routines'
+import { getLastWorkoutSession, getRecommendedDay, countSessionsThisWeek } from '../data/recommendation'
 import { mostRecentPR } from '../data/analytics'
 import { currentPhase, currentWeekNumber } from '../lib/programWeek'
-import { templateLabel, categoryMeta } from '../lib/categoryMeta'
 import { formatDayLabel, formatWeight } from '../lib/format'
 import { buildActiveWorkout } from '../lib/startWorkout'
 import Card from '../components/Card'
@@ -13,11 +11,11 @@ import Button from '../components/Button'
 import WeekStrip from '../components/WeekStrip'
 
 export default function Dashboard() {
-  const { sessions, program, setActiveWorkout, activeWorkout } = useAppStore()
+  const { sessions, program, setActiveWorkout, activeWorkout, routines, activeRoutineId } = useAppStore()
   const navigate = useNavigate()
 
-  const recommendedId = useMemo(() => getRecommendedTemplateId(sessions), [sessions])
-  const recommendedTemplate = getRoutineTemplate(recommendedId)!
+  const activeRoutine = routines.find((r) => r.id === activeRoutineId)
+  const recommendedDay = useMemo(() => getRecommendedDay(activeRoutine, sessions), [activeRoutine, sessions])
   const lastSession = getLastWorkoutSession(sessions)
   const week = program ? currentWeekNumber(program) : 1
   const phase = program ? currentPhase(program) : undefined
@@ -29,7 +27,11 @@ export default function Dashboard() {
       navigate('/train/session')
       return
     }
-    setActiveWorkout(buildActiveWorkout(recommendedTemplate))
+    if (!activeRoutine || !recommendedDay) {
+      navigate('/routines')
+      return
+    }
+    setActiveWorkout(buildActiveWorkout(activeRoutine, recommendedDay))
     navigate('/train/session')
   }
 
@@ -48,7 +50,7 @@ export default function Dashboard() {
       {activeWorkout && (
         <Card className="border-brand/40 bg-brand/5">
           <p className="text-sm text-brand font-semibold mb-1">Entrenamiento en curso</p>
-          <p className="text-base-300 text-sm mb-3">Tienes {templateLabel(activeWorkout.category, activeWorkout.variant)} sin terminar.</p>
+          <p className="text-base-300 text-sm mb-3">Tienes {activeWorkout.dayName} sin terminar.</p>
           <Button className="w-full" onClick={() => navigate('/train/session')}>Continuar entrenamiento</Button>
         </Card>
       )}
@@ -56,16 +58,14 @@ export default function Dashboard() {
       <Card>
         <p className="text-sm text-base-400 mb-1">Te recomendamos</p>
         <div className="flex items-center gap-2 mb-4">
-          <span className={`w-2.5 h-2.5 rounded-full ${categoryMeta[recommendedTemplate.category].color}`} />
-          <h2 className="text-2xl font-bold">{templateLabel(recommendedTemplate.category, recommendedTemplate.variant)}</h2>
+          {recommendedDay && <span className="w-2.5 h-2.5 rounded-full" style={{ background: recommendedDay.color }} />}
+          <h2 className="text-2xl font-bold">{recommendedDay?.name ?? 'Crea tu primera rutina'}</h2>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
           <div>
             <p className="text-base-500">Último entrenamiento</p>
-            <p className="font-semibold text-base-100">
-              {lastSession ? templateLabel(lastSession.actualCategory, lastSession.actualVariant) : 'Sin registros todavía'}
-            </p>
+            <p className="font-semibold text-base-100">{lastSession ? lastSession.dayName : 'Sin registros todavía'}</p>
             {lastSession && <p className="text-xs text-base-500">{formatDayLabel(lastSession.date)}</p>}
           </div>
           <div>
@@ -76,7 +76,7 @@ export default function Dashboard() {
         </div>
 
         <Button size="lg" className="w-full" onClick={startRecommended}>
-          {activeWorkout ? 'Continuar entrenamiento' : 'Empezar entrenamiento'}
+          {activeWorkout ? 'Continuar entrenamiento' : recommendedDay ? 'Empezar entrenamiento' : 'Crear rutina'}
         </Button>
         <button className="w-full text-center text-sm text-base-400 mt-3 py-1" onClick={() => navigate('/train')}>
           Cambiar entrenamiento

@@ -2,8 +2,6 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { getExercise } from '../../data/exercises'
-import { routineLists } from '../../data/routineLists'
-import { templateLabel } from '../../lib/categoryMeta'
 import { newId } from '../../lib/id'
 import { useBodyScrollLock } from '../../lib/useBodyScrollLock'
 import Card from '../../components/Card'
@@ -14,8 +12,9 @@ export default function ActiveWorkout() {
   const { activeWorkout, setActiveWorkout, addSession } = useAppStore()
   const navigate = useNavigate()
   const [showFinish, setShowFinish] = useState(false)
+  const [showDiscard, setShowDiscard] = useState(false)
   const [notes, setNotes] = useState('')
-  useBodyScrollLock(showFinish)
+  useBodyScrollLock(showFinish || showDiscard)
 
   useEffect(() => {
     if (!activeWorkout) navigate('/train', { replace: true })
@@ -36,21 +35,6 @@ export default function ActiveWorkout() {
     setActiveWorkout({ ...activeWorkout!, exercises: list })
   }
 
-  function addAbs() {
-    const absRoutine = routineLists.find((r) => r.id === 'abs-rapido')!
-    const extras = absRoutine.exerciseIds.map((id, i) => ({
-      exerciseId: id,
-      order: activeWorkout!.exercises.length + i + 1,
-      isExtra: true,
-      targetSets: 2,
-      repMin: 12,
-      repMax: 20,
-      sets: [],
-    }))
-    setActiveWorkout({ ...activeWorkout!, exercises: [...activeWorkout!.exercises, ...extras] })
-    setShowFinish(false)
-  }
-
   function finish() {
     const exercises: SessionExercise[] = activeWorkout!.exercises
       .filter((e) => e.sets.length > 0)
@@ -65,9 +49,10 @@ export default function ActiveWorkout() {
     const session: WorkoutSession = {
       id: newId('session'),
       date: new Date().toISOString().slice(0, 10),
-      recommendedTemplateId: activeWorkout!.recommendedTemplateId,
-      actualCategory: activeWorkout!.category,
-      actualVariant: activeWorkout!.variant,
+      routineId: activeWorkout!.routineId,
+      dayId: activeWorkout!.dayId,
+      dayName: activeWorkout!.dayName,
+      dayColor: activeWorkout!.dayColor,
       durationMin: Math.max(1, Math.round((Date.now() - new Date(activeWorkout!.startedAt).getTime()) / 60000)),
       exercises,
       notes: notes.trim() || undefined,
@@ -77,6 +62,11 @@ export default function ActiveWorkout() {
     navigate(`/calendar/${session.date}`, { replace: true })
   }
 
+  function discard() {
+    setActiveWorkout(null)
+    navigate('/')
+  }
+
   const totalSets = activeWorkout.exercises.reduce((sum, e) => sum + e.sets.length, 0)
 
   return (
@@ -84,19 +74,20 @@ export default function ActiveWorkout() {
       <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3">
         <div>
           <p className="text-sm text-base-400">Entrenando</p>
-          <h1 className="text-2xl font-extrabold">{templateLabel(activeWorkout.category, activeWorkout.variant)}</h1>
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: activeWorkout.dayColor }} />
+            <h1 className="text-2xl font-extrabold">{activeWorkout.dayName}</h1>
+          </div>
         </div>
         <button
-          onClick={() => {
-            setActiveWorkout(null)
-            navigate('/')
-          }}
+          onClick={() => setShowDiscard(true)}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-base-800 text-base-300"
-          aria-label="Cerrar"
+          aria-label="Cerrar entrenamiento sin guardar"
         >
           ✕
         </button>
       </div>
+      <p className="px-4 mb-3 text-xs text-base-500">Desliza hacia abajo desde arriba para minimizar y seguir navegando sin perder el progreso.</p>
 
       <div className="px-4 mb-3 text-sm text-base-400">{totalSets} series registradas</div>
 
@@ -175,7 +166,9 @@ export default function ActiveWorkout() {
         <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
           <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
             <p className="text-lg font-bold mb-1">¿Terminar aquí?</p>
-            <p className="text-sm text-base-400 mb-4">Puedes añadir un ABS rápido antes de guardar, o finalizar directamente.</p>
+            <p className="text-sm text-base-400 mb-4">
+              Se guardará el entrenamiento con las series registradas. Si te falta algún ejercicio, usa "+ Añadir ejercicio" antes de finalizar.
+            </p>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
@@ -184,14 +177,30 @@ export default function ActiveWorkout() {
               rows={2}
             />
             <div className="flex flex-col gap-2.5">
-              <Button variant="secondary" size="lg" onClick={addAbs}>
-                Añadir ABS
-              </Button>
               <Button size="lg" onClick={finish}>
                 Finalizar y guardar
               </Button>
               <Button variant="ghost" onClick={() => setShowFinish(false)}>
                 Seguir entrenando
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDiscard && (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-end justify-center">
+          <div className="w-full max-w-md bg-base-900 rounded-t-3xl p-5 safe-bottom">
+            <p className="text-lg font-bold mb-1">¿Cerrar sin guardar?</p>
+            <p className="text-sm text-base-400 mb-4">
+              Se perderán todas las series registradas en este entrenamiento. Si quieres seguir más tarde, usa el gesto de deslizar hacia abajo en vez de cerrar.
+            </p>
+            <div className="flex flex-col gap-2.5">
+              <Button variant="danger" size="lg" onClick={discard}>
+                Cerrar sin guardar
+              </Button>
+              <Button variant="ghost" onClick={() => setShowDiscard(false)}>
+                Volver al entrenamiento
               </Button>
             </div>
           </div>

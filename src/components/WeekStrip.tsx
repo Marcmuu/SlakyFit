@@ -1,6 +1,6 @@
 import { currentWeekDates } from '../lib/dateGrid'
 import { todayIso } from '../lib/format'
-import { categoryMeta } from '../lib/categoryMeta'
+import { readableTextColor } from '../lib/color'
 import type { WorkoutSession } from '../types'
 
 const LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -23,9 +23,10 @@ export default function WeekStrip({ sessions }: { sessions: WorkoutSession[] }) 
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold tabular border ${
                 isToday ? 'border-brand' : 'border-transparent'
-              } ${session ? categoryMeta[session.actualCategory].color : isFuture ? 'bg-base-900' : 'bg-base-800'}`}
+              } ${session ? '' : isFuture ? 'bg-base-900' : 'bg-base-800'}`}
+              style={session ? { background: session.dayColor } : undefined}
             >
-              <span className={session ? 'text-base-950' : isFuture ? 'text-base-600' : 'text-base-400'}>
+              <span style={session ? { color: readableTextColor(session.dayColor) } : undefined} className={!session ? (isFuture ? 'text-base-600' : 'text-base-400') : undefined}>
                 {Number(date.slice(-2))}
               </span>
             </div>

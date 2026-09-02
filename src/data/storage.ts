@@ -30,6 +30,9 @@ export const STORAGE_KEYS = {
   program: 'program',
   activeWorkout: 'activeWorkout',
   seeded: 'seeded-v2',
+  routines: 'routines',
+  activeRoutineId: 'activeRoutineId',
+  routinesMigratedV1: 'routines-migrated-v1',
 } as const
 
 const EXPORT_FORMAT = 'slakyfit-backup'

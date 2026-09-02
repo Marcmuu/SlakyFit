@@ -1,5 +1,4 @@
-import type { WorkoutSession } from '../types'
-import { routineSequence, getRoutineTemplate } from './routines'
+import type { WorkoutSession, Routine, RoutineDay } from '../types'
 import { mondayOf } from '../lib/dateGrid'
 
 export function getLastWorkoutSession(sessions: WorkoutSession[]): WorkoutSession | undefined {
@@ -7,23 +6,14 @@ export function getLastWorkoutSession(sessions: WorkoutSession[]): WorkoutSessio
   return [...sessions].sort((a, b) => (a.date < b.date ? 1 : -1))[0]
 }
 
-function templateIdFor(session: WorkoutSession): string {
-  if (session.actualCategory === 'legs') return 'legs'
-  return `${session.actualCategory}-${(session.actualVariant ?? 'A').toLowerCase()}`
-}
-
-export function getRecommendedTemplateId(sessions: WorkoutSession[]): string {
-  const last = getLastWorkoutSession(sessions)
-  if (!last) return routineSequence[0]
-  const lastId = templateIdFor(last)
-  const idx = routineSequence.indexOf(lastId)
-  if (idx === -1) return routineSequence[0]
-  return routineSequence[(idx + 1) % routineSequence.length]
-}
-
-export function getRecommendedTemplate(sessions: WorkoutSession[]) {
-  const id = getRecommendedTemplateId(sessions)
-  return getRoutineTemplate(id)!
+export function getRecommendedDay(routine: Routine | undefined, sessions: WorkoutSession[]): RoutineDay | undefined {
+  if (!routine || routine.days.length === 0) return undefined
+  const days = [...routine.days].sort((a, b) => a.order - b.order)
+  const lastInRoutine = sessions.filter((s) => s.routineId === routine.id).sort((a, b) => (a.date < b.date ? 1 : -1))[0]
+  if (!lastInRoutine) return days[0]
+  const idx = days.findIndex((d) => d.id === lastInRoutine.dayId)
+  if (idx === -1) return days[0]
+  return days[(idx + 1) % days.length]
 }
 
 export function countSessionsThisWeek(sessions: WorkoutSession[], referenceDate = new Date()): number {
