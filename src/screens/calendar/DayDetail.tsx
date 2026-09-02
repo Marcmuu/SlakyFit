@@ -32,8 +32,8 @@ export default function DayDetail() {
             <Card>
               <div className="flex items-center gap-2 mb-1">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: session.dayColor }} />
-                <h2 className="text-xl font-extrabold flex-1">{session.dayName}</h2>
-                {session.durationMin && <span className="text-xs text-base-500 tabular">{session.durationMin} min</span>}
+                <h2 className="text-xl font-extrabold flex-1 min-w-0 truncate">{session.dayName}</h2>
+                {session.durationMin && <span className="text-xs text-base-500 tabular shrink-0 whitespace-nowrap">{session.durationMin} min</span>}
               </div>
               {session.notes && <p className="text-sm text-base-400 mt-2">"{session.notes}"</p>}
               <div className="flex gap-4 mt-3 pt-3 border-t border-base-800 text-xs font-semibold">

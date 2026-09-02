@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react'
-import Card from './Card'
+import { useBodyScrollLock } from '../lib/useBodyScrollLock'
+import Button from './Button'
 
 const PRESETS = [30, 60, 120, 180]
+const RADIUS = 90
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 function formatPreset(sec: number): string {
   return sec < 60 ? `${sec}s` : `${sec / 60}min`
+}
+
+function formatClock(sec: number): string {
+  const mm = String(Math.floor(sec / 60)).padStart(2, '0')
+  const ss = String(sec % 60).padStart(2, '0')
+  return `${mm}:${ss}`
 }
 
 // `trigger` sube cada vez que se guarda una serie; ese cambio es la señal
@@ -13,6 +22,9 @@ export default function RestTimer({ trigger }: { trigger: number }) {
   const [duration, setDuration] = useState<number | null>(null)
   const [remaining, setRemaining] = useState(0)
   const [showPicker, setShowPicker] = useState(false)
+
+  const open = showPicker || duration !== null
+  useBodyScrollLock(open)
 
   useEffect(() => {
     if (trigger === 0) return
@@ -33,7 +45,7 @@ export default function RestTimer({ trigger }: { trigger: number }) {
     }
   }, [remaining, duration])
 
-  if (!showPicker && duration === null) return null
+  if (!open) return null
 
   function start(seconds: number) {
     setDuration(seconds)
@@ -45,60 +57,84 @@ export default function RestTimer({ trigger }: { trigger: number }) {
     setRemaining((r) => Math.max(0, r + delta))
   }
 
-  function stop() {
+  function close() {
     setDuration(null)
     setShowPicker(false)
   }
 
-  if (showPicker) {
-    return (
-      <Card className="border-brand/30 bg-brand/5">
-        <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-base-100">¿Descanso antes de la próxima serie?</p>
-          <button onClick={() => setShowPicker(false)} className="text-xs text-base-400 shrink-0 ml-2">
-            Cerrar
-          </button>
-        </div>
-        <div className="flex gap-2">
-          {PRESETS.map((sec) => (
-            <button
-              key={sec}
-              onClick={() => start(sec)}
-              className="flex-1 h-11 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-100 active:bg-base-700"
-            >
-              {formatPreset(sec)}
-            </button>
-          ))}
-        </div>
-      </Card>
-    )
-  }
-
-  const finished = remaining === 0
-  const mm = String(Math.floor(remaining / 60)).padStart(2, '0')
-  const ss = String(remaining % 60).padStart(2, '0')
+  const finished = duration !== null && remaining === 0
+  const progress = duration ? remaining / duration : 0
+  const dashoffset = CIRCUMFERENCE * (1 - progress)
 
   return (
-    <Card className={finished ? 'border-brand bg-brand/10' : 'border-brand/30 bg-brand/5'}>
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-xs font-bold text-brand uppercase tracking-wide">{finished ? 'Descanso terminado' : 'Descanso'}</p>
-        <button onClick={stop} className="text-xs text-base-400">
-          {finished ? 'Cerrar' : 'Saltar'}
+    <div className="fixed inset-0 z-50 bg-base-950 flex flex-col safe-bottom">
+      <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3">
+        <p className="text-lg font-bold text-base-100">{showPicker ? '¿Descanso antes de la próxima serie?' : finished ? 'Descanso terminado' : 'Descanso'}</p>
+        <button
+          onClick={close}
+          className="w-9 h-9 shrink-0 flex items-center justify-center rounded-full bg-base-800 text-base-300 active:bg-base-700"
+          aria-label="Cerrar"
+        >
+          ✕
         </button>
       </div>
-      <p className="text-4xl font-extrabold tabular text-center mb-3">
-        {mm}:{ss}
-      </p>
-      {!finished && (
-        <div className="flex gap-2">
-          <button onClick={() => adjust(-15)} className="flex-1 h-10 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700">
-            -15s
-          </button>
-          <button onClick={() => adjust(15)} className="flex-1 h-10 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700">
-            +15s
-          </button>
-        </div>
-      )}
-    </Card>
+
+      <div className="flex-1 flex flex-col items-center justify-center px-6 gap-8">
+        {showPicker ? (
+          <div className="w-full max-w-xs grid grid-cols-2 gap-3">
+            {PRESETS.map((sec) => (
+              <button
+                key={sec}
+                onClick={() => start(sec)}
+                className="h-16 rounded-2xl bg-base-800 border border-base-700 text-lg font-bold text-base-100 active:bg-base-700"
+              >
+                {formatPreset(sec)}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="relative w-64 h-64">
+              <svg viewBox="0 0 200 200" className="w-full h-full -rotate-90">
+                <circle cx="100" cy="100" r={RADIUS} fill="none" stroke="#1c2127" strokeWidth="12" />
+                <circle
+                  cx="100"
+                  cy="100"
+                  r={RADIUS}
+                  fill="none"
+                  stroke="#c4ff3d"
+                  strokeWidth="12"
+                  strokeLinecap="round"
+                  strokeDasharray={CIRCUMFERENCE}
+                  strokeDashoffset={dashoffset}
+                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="text-5xl font-extrabold tabular text-base-100">{formatClock(remaining)}</span>
+              </div>
+            </div>
+
+            {finished ? (
+              <Button size="lg" className="w-full max-w-xs" onClick={close}>
+                Cerrar
+              </Button>
+            ) : (
+              <div className="flex gap-3 w-full max-w-xs">
+                <button onClick={() => adjust(-15)} className="flex-1 h-12 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700">
+                  -15s
+                </button>
+                <button onClick={close} className="flex-1 h-12 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700">
+                  Saltar
+                </button>
+                <button onClick={() => adjust(15)} className="flex-1 h-12 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700">
+                  +15s
+                </button>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </div>
   )
 }

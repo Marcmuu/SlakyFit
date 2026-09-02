@@ -69,11 +69,11 @@ export default function Library() {
           {results.map((ex) => (
             <button key={ex.id} onClick={() => navigate(`/library/${ex.id}`)} className="text-left">
               <Card className="active:bg-base-800 p-3 flex items-center justify-between">
-                <div>
-                  <p className="font-semibold text-base-100">{ex.name}</p>
-                  <p className="text-xs text-base-500 capitalize">{ex.mainMuscles.join(', ')} · {equipmentLabels[ex.equipment]}</p>
+                <div className="flex-1 min-w-0 pr-2">
+                  <p className="font-semibold text-base-100 truncate">{ex.name}</p>
+                  <p className="text-xs text-base-500 capitalize truncate">{ex.mainMuscles.join(', ')} · {equipmentLabels[ex.equipment]}</p>
                 </div>
-                <span className="text-base-600">›</span>
+                <span className="text-base-600 shrink-0">›</span>
               </Card>
             </button>
           ))}

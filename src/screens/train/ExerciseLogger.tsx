@@ -187,7 +187,7 @@ export default function ExerciseLogger() {
             </div>
           </div>
           <Button size="lg" className="w-full mt-5" onClick={saveSet}>
-            Guardar serie
+            Siguiente serie
           </Button>
         </Card>
 

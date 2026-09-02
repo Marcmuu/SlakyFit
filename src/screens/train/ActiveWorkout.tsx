@@ -72,16 +72,16 @@ export default function ActiveWorkout() {
   return (
     <div className="pb-8">
       <div className="flex items-center justify-between px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-3">
-        <div>
+        <div className="flex-1 min-w-0 mr-3">
           <p className="text-sm text-base-400">Entrenando</p>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: activeWorkout.dayColor }} />
-            <h1 className="text-2xl font-extrabold">{activeWorkout.dayName}</h1>
+            <h1 className="text-2xl font-extrabold truncate">{activeWorkout.dayName}</h1>
           </div>
         </div>
         <button
           onClick={() => setShowDiscard(true)}
-          className="w-9 h-9 flex items-center justify-center rounded-full bg-base-800 text-base-300"
+          className="w-9 h-9 flex items-center justify-center rounded-full bg-base-800 text-base-300 shrink-0"
           aria-label="Cerrar entrenamiento sin guardar"
         >
           ✕

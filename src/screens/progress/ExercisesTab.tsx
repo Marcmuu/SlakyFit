@@ -43,8 +43,8 @@ export default function ExercisesTab() {
             <button key={exercise.id} onClick={() => navigate(`/library/${exercise.id}`)} className="text-left">
               <Card className="active:bg-base-800 p-3">
                 <div className="flex items-center justify-between mb-2">
-                  <p className="font-semibold text-base-100">{exercise.name}</p>
-                  <span className="text-base-600">›</span>
+                  <p className="font-semibold text-base-100 flex-1 min-w-0 truncate pr-2">{exercise.name}</p>
+                  <span className="text-base-600 shrink-0">›</span>
                 </div>
                 <div className="flex gap-4 text-xs text-base-400 tabular">
                   <span>Actual: {current ? `${formatWeight(current.weight)} kg` : '—'}</span>

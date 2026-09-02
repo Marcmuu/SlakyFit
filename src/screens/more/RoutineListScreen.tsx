@@ -24,11 +24,11 @@ export default function RoutineListScreen() {
             {lists.map((list) => (
               <button key={list.id} onClick={() => navigate(`/more/routine/${list.id}`)} className="text-left">
                 <Card className="active:bg-base-800 flex items-center justify-between">
-                  <div>
-                    <p className="font-semibold text-base-100">{list.name}</p>
-                    <p className="text-xs text-base-500">{list.durationLabel} · {list.exerciseIds.length} ejercicios</p>
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p className="font-semibold text-base-100 truncate">{list.name}</p>
+                    <p className="text-xs text-base-500 truncate">{list.durationLabel} · {list.exerciseIds.length} ejercicios</p>
                   </div>
-                  <span className="text-base-600">›</span>
+                  <span className="text-base-600 shrink-0">›</span>
                 </Card>
               </button>
             ))}
@@ -41,8 +41,8 @@ export default function RoutineListScreen() {
             {soloExercises.map((ex) => (
               <button key={ex.id} onClick={() => navigate(`/library/${ex.id}`)} className="text-left">
                 <Card className="active:bg-base-800 p-3 flex items-center justify-between">
-                  <p className="font-medium text-base-100">{ex.name}</p>
-                  <span className="text-base-600">›</span>
+                  <p className="font-medium text-base-100 flex-1 min-w-0 truncate pr-2">{ex.name}</p>
+                  <span className="text-base-600 shrink-0">›</span>
                 </Card>
               </button>
             ))}

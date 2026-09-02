@@ -82,9 +82,9 @@ export default function SelectWorkout() {
                 const exercise = getExercise(item.exerciseId)
                 if (!exercise) return null
                 return (
-                  <div key={item.id} className="py-3 flex items-center justify-between">
-                    <span className="font-medium text-base-100">{exercise.name}</span>
-                    <span className="text-xs text-base-500 tabular">
+                  <div key={item.id} className="py-3 flex items-center justify-between gap-2">
+                    <span className="font-medium text-base-100 flex-1 min-w-0 truncate">{exercise.name}</span>
+                    <span className="text-xs text-base-500 tabular shrink-0 whitespace-nowrap">
                       {item.targetSets} × {item.repMin}-{item.repMax}
                     </span>
                   </div>

@@ -197,8 +197,8 @@ export default function SessionEditor() {
               return (
                 <Card key={`${sessionEx.exerciseId}-${exIndex}`} className="p-3">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="font-semibold text-base-100">{exercise.name}</p>
-                    <button onClick={() => removeExercise(exIndex)} className="text-xs text-accent-push shrink-0">
+                    <p className="font-semibold text-base-100 flex-1 min-w-0 truncate pr-2">{exercise.name}</p>
+                    <button onClick={() => removeExercise(exIndex)} className="text-xs text-accent-push shrink-0 whitespace-nowrap">
                       Quitar ejercicio
                     </button>
                   </div>

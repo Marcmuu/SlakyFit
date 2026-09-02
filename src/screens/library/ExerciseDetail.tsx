@@ -135,8 +135,8 @@ export default function ExerciseDetail() {
                 if (!alt) return null
                 return (
                   <button key={id} onClick={() => navigate(`/library/${id}`)} className="text-left flex items-center justify-between py-1.5">
-                    <span className="text-sm text-base-200">{alt.name}</span>
-                    <span className="text-base-600">›</span>
+                    <span className="text-sm text-base-200 flex-1 min-w-0 truncate pr-2">{alt.name}</span>
+                    <span className="text-base-600 shrink-0">›</span>
                   </button>
                 )
               })}
@@ -149,9 +149,9 @@ export default function ExerciseDetail() {
             <p className="text-sm font-bold mb-3">Últimos entrenamientos</p>
             <div className="flex flex-col divide-y divide-base-800">
               {history.slice(0, 6).map((h, i) => (
-                <div key={i} className="py-2 flex items-center justify-between text-sm">
-                  <span className="text-base-500">{formatDayLabel(h.date)}</span>
-                  <span className="font-semibold text-base-100 tabular">
+                <div key={i} className="py-2 flex items-start justify-between gap-2 text-sm">
+                  <span className="text-base-500 shrink-0">{formatDayLabel(h.date)}</span>
+                  <span className="font-semibold text-base-100 tabular text-right">
                     {formatWeight(h.sets[0].weight)} kg · {h.sets.map((s) => s.reps).join('/')}
                   </span>
                 </div>

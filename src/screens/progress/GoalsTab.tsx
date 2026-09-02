@@ -35,8 +35,8 @@ export default function GoalsTab() {
         return (
           <Card key={goal.id}>
             <div className="flex items-center justify-between mb-2">
-              <p className="font-semibold text-base-100">{goal.label}</p>
-              <button onClick={() => deleteGoal(goal.id)} className="text-xs text-accent-push">
+              <p className="font-semibold text-base-100 flex-1 min-w-0 truncate pr-2">{goal.label}</p>
+              <button onClick={() => deleteGoal(goal.id)} className="text-xs text-accent-push shrink-0">
                 Eliminar
               </button>
             </div>
