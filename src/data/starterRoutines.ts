@@ -97,6 +97,52 @@ const upperLower: RoutineBlueprint = {
   ],
 }
 
+const fullBody1Day: RoutineBlueprint = {
+  id: 'starter-full-body-1',
+  name: 'Full Body Exprés (1 día)',
+  days: [
+    {
+      name: 'Full Body',
+      items: [
+        item('sentadilla', 3, 6, 10),
+        item('press-banca-barra', 3, 6, 10),
+        item('remo-t', 3, 8, 12),
+        item('press-militar-mancuernas', 2, 8, 12),
+        item('curl-femoral-sentado', 2, 10, 15),
+        item('elevaciones-laterales', 2, 12, 20),
+        item('curl-ez-pie', 2, 8, 12),
+      ],
+    },
+  ],
+}
+
+const fullBody2Day: RoutineBlueprint = {
+  id: 'starter-full-body-2',
+  name: 'Full Body (2 días)',
+  days: [
+    {
+      name: 'Full Body A',
+      items: [
+        item('sentadilla', 3, 6, 10),
+        item('press-banca-barra', 3, 6, 10),
+        item('remo-t', 3, 8, 12),
+        item('press-militar-mancuernas', 2, 8, 12),
+        item('curl-ez-pie', 2, 8, 12),
+      ],
+    },
+    {
+      name: 'Full Body B',
+      items: [
+        item('peso-muerto-rumano', 3, 8, 12),
+        item('press-inclinado-mancuernas', 3, 8, 12),
+        item('jalon-neutro', 3, 8, 12),
+        item('elevaciones-laterales', 2, 12, 20),
+        item('extension-triceps-polea', 2, 10, 15),
+      ],
+    },
+  ],
+}
+
 const fullBody: RoutineBlueprint = {
   id: 'starter-full-body',
   name: 'Full Body',
@@ -192,7 +238,14 @@ const broSplit: RoutineBlueprint = {
 
 // Catálogo local: se usa cuando no hay Supabase configurado, o si la consulta
 // a la tabla `routine_templates` falla — así el catálogo nunca se queda vacío.
-export const starterRoutineBlueprints: RoutineBlueprint[] = [pushPullLegs, upperLower, fullBody, broSplit]
+export const starterRoutineBlueprints: RoutineBlueprint[] = [
+  fullBody1Day,
+  fullBody2Day,
+  pushPullLegs,
+  upperLower,
+  fullBody,
+  broSplit,
+]
 
 interface RoutineTemplateRow {
   id: string

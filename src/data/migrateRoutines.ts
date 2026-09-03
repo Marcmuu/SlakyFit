@@ -60,12 +60,17 @@ export function migrateRoutinesIfNeeded(): void {
   if (hasItem(STORAGE_KEYS.routinesMigratedV1)) return
 
   const existingRoutines = loadItem<Routine[]>(STORAGE_KEYS.routines, [])
-  if (existingRoutines.length === 0) {
+  const oldSessions = loadItem<LegacySession[]>(STORAGE_KEYS.sessions, [])
+  // Solo se genera la "Rutina 1" automática si hay sesiones del formato legacy
+  // (dispositivo real anterior al sistema de rutinas personalizadas) a las que
+  // enganchar. Un dispositivo/cuenta realmente nuevo se queda sin rutinas y pasa
+  // por el asistente de creación en vez de recibir una PPL por defecto.
+  const needsLegacyMigration = oldSessions.some((s) => !s.dayName)
+
+  if (existingRoutines.length === 0 && needsLegacyMigration) {
     const routine = buildInitialRoutine()
     saveItem(STORAGE_KEYS.routines, [routine])
     saveItem(STORAGE_KEYS.activeRoutineId, routine.id)
-
-    const oldSessions = loadItem<LegacySession[]>(STORAGE_KEYS.sessions, [])
     saveItem(
       STORAGE_KEYS.sessions,
       oldSessions.map((s) => migrateSession(s, routine)),

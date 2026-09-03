@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../data/store'
 import { supabase } from '../data/supabaseClient'
-import { fetchCloudBackup, applyCloudBackup, pushCloudState, markUserResolved, isUserResolved } from '../data/cloudSync'
+import { fetchCloudBackup, applyCloudBackup, pushCloudState, markUserResolved, isUserResolved, hasMeaningfulLocalData } from '../data/cloudSync'
 import { resetLocalDataForNewAccount, exportAllData } from '../data/storage'
 import Button from './Button'
 import ActionSheet from './ActionSheet'
@@ -21,15 +21,27 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     if (!supabase || !user || isUserResolved(user.id)) return
     setCheckingCloud(true)
     fetchCloudBackup(user.id)
-      .then((cloud) => {
+      .then(async (cloud) => {
         if (cloud) {
           applyCloudBackup(cloud)
           markUserResolved(user.id)
           window.location.reload()
-        } else {
-          setNeedsChoice(true)
-          setCheckingCloud(false)
+          return
         }
+        // Sin copia en la nube todavía. Si este dispositivo no tiene nada
+        // relevante que perder (p.ej. solo quedó una rutina de otra cuenta
+        // pero cero entrenamientos), no tiene sentido preguntar — se resuelve
+        // como cuenta nueva directamente y el usuario cae en el asistente de
+        // creación de rutina.
+        if (!hasMeaningfulLocalData(exportAllData())) {
+          resetLocalDataForNewAccount()
+          await pushCloudState(user.id)
+          markUserResolved(user.id)
+          window.location.reload()
+          return
+        }
+        setNeedsChoice(true)
+        setCheckingCloud(false)
       })
       .catch((err) => {
         setError(err instanceof Error ? err.message : 'No se pudo comprobar tu copia en la nube.')

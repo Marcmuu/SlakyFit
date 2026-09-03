@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { newId } from '../../lib/id'
+import { getExercise } from '../../data/exercises'
 import { fetchStarterRoutineBlueprints, instantiateStarterRoutine } from '../../data/starterRoutines'
 import type { RoutineBlueprint } from '../../data/starterRoutines'
 import PageHeader from '../../components/PageHeader'
@@ -10,13 +11,14 @@ import Button from '../../components/Button'
 import type { Routine } from '../../types'
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
-const MIN_DAYS = 3
+const MIN_DAYS = 1
 
 export default function RoutineWizard() {
   const { routines, addRoutine, setActiveRoutineId } = useAppStore()
   const navigate = useNavigate()
   const [selectedDays, setSelectedDays] = useState<Set<number>>(new Set())
   const [blueprints, setBlueprints] = useState<RoutineBlueprint[] | null>(null)
+  const [preview, setPreview] = useState<{ blueprint: RoutineBlueprint; dayCount?: number } | null>(null)
 
   useEffect(() => {
     fetchStarterRoutineBlueprints().then(setBlueprints)
@@ -45,8 +47,13 @@ export default function RoutineWizard() {
   const compatible = blueprints?.filter(isCompatible) ?? []
   const others = blueprints?.filter((b) => !isCompatible(b)) ?? []
 
-  function pick(blueprint: RoutineBlueprint) {
-    const routine = instantiateStarterRoutine(blueprint, isFlexible(blueprint) ? dayCount : undefined)
+  function openPreview(blueprint: RoutineBlueprint) {
+    setPreview({ blueprint, dayCount: isFlexible(blueprint) ? dayCount : undefined })
+  }
+
+  function confirmPreview() {
+    if (!preview) return
+    const routine = instantiateStarterRoutine(preview.blueprint, preview.dayCount)
     addRoutine(routine)
     setActiveRoutineId(routine.id)
     navigate(`/routines/${routine.id}`)
@@ -56,7 +63,43 @@ export default function RoutineWizard() {
     const now = new Date().toISOString()
     const routine: Routine = { id: newId('routine'), name: `Rutina ${routines.length + 1}`, days: [], createdAt: now, updatedAt: now }
     addRoutine(routine)
+    setActiveRoutineId(routine.id)
     navigate(`/routines/${routine.id}`)
+  }
+
+  if (preview) {
+    const previewDays = preview.dayCount ? preview.blueprint.days.slice(0, preview.dayCount) : preview.blueprint.days
+    return (
+      <div className="pb-8">
+        <PageHeader title={preview.blueprint.name} subtitle="Revisa los días antes de guardarla" onBack={() => setPreview(null)} />
+        <div className="px-4 flex flex-col gap-3">
+          {previewDays.map((day, i) => (
+            <Card key={i}>
+              <p className="font-bold text-base-100 mb-2">{day.name}</p>
+              <ul className="flex flex-col gap-1">
+                {day.items.map((it, j) => {
+                  const exercise = getExercise(it.exerciseId)
+                  return (
+                    <li key={j} className="text-sm text-base-400 flex items-center justify-between">
+                      <span>{exercise?.name ?? it.exerciseId}</span>
+                      <span className="text-xs text-base-500 shrink-0">
+                        {it.targetSets}×{it.repMin}-{it.repMax}
+                      </span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </Card>
+          ))}
+          <Button size="lg" className="w-full mt-1" onClick={confirmPreview}>
+            Guardar rutina
+          </Button>
+          <Button variant="secondary" size="lg" className="w-full" onClick={() => setPreview(null)}>
+            Elegir otra
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -65,7 +108,7 @@ export default function RoutineWizard() {
       <div className="px-4 flex flex-col gap-4">
         <Card>
           <p className="text-sm font-bold mb-1">¿Qué días quieres entrenar?</p>
-          <p className="text-xs text-base-500 mb-3">Toca los días que te vengan bien, mínimo {MIN_DAYS}.</p>
+          <p className="text-xs text-base-500 mb-3">Toca los días que te vengan bien, aunque sea solo uno.</p>
           <div className="flex justify-between gap-1.5">
             {WEEKDAYS.map((label, i) => {
               const selected = selectedDays.has(i)
@@ -85,9 +128,7 @@ export default function RoutineWizard() {
           <p className="text-xs text-base-500 mt-3 text-center">
             {dayCount === 0
               ? 'Todavía no has elegido ningún día'
-              : dayCount < MIN_DAYS
-                ? `Elige al menos ${MIN_DAYS} días (llevas ${dayCount})`
-                : `Entrenas ${dayCount} día${dayCount === 1 ? '' : 's'} a la semana`}
+              : `Entrenas ${dayCount} día${dayCount === 1 ? '' : 's'} a la semana`}
           </p>
         </Card>
 
@@ -100,7 +141,7 @@ export default function RoutineWizard() {
                 <p className="text-xs text-base-500 mb-2 uppercase tracking-wide">Compatibles con {dayCount} días</p>
                 <div className="flex flex-col gap-2">
                   {compatible.map((b) => (
-                    <button key={b.id} onClick={() => pick(b)} className="text-left">
+                    <button key={b.id} onClick={() => openPreview(b)} className="text-left">
                       <Card className="active:bg-base-800">
                         <p className="font-semibold text-base-100">{b.name}</p>
                         <p className="text-xs text-base-500 mt-0.5">{b.days.slice(0, dayCount).map((d) => d.name).join(' · ')}</p>
@@ -122,7 +163,7 @@ export default function RoutineWizard() {
                 <p className="text-xs text-base-500 mb-2 uppercase tracking-wide">Otras plantillas</p>
                 <div className="flex flex-col gap-2">
                   {others.map((b) => (
-                    <button key={b.id} onClick={() => pick(b)} className="text-left">
+                    <button key={b.id} onClick={() => openPreview(b)} className="text-left">
                       <Card className="active:bg-base-800">
                         <div className="flex items-center justify-between">
                           <p className="font-semibold text-base-100">{b.name}</p>

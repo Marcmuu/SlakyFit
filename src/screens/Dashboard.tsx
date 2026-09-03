@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../data/store'
 import { getLastWorkoutSession, getRecommendedDay, countSessionsThisWeek } from '../data/recommendation'
 import { mostRecentPR } from '../data/analytics'
@@ -21,6 +21,10 @@ export default function Dashboard() {
   const phase = program ? currentPhase(program) : undefined
   const sessionsThisWeek = countSessionsThisWeek(sessions)
   const recentPR = useMemo(() => mostRecentPR(sessions), [sessions])
+
+  if (routines.length === 0) {
+    return <Navigate to="/routines/wizard" replace />
+  }
 
   function startRecommended() {
     if (activeWorkout) {
