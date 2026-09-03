@@ -45,6 +45,14 @@ const AppStoreContext = createContext<AppStoreValue | undefined>(undefined)
 
 function initializeSeed() {
   if (hasItem(STORAGE_KEYS.seeded)) return
+  if (supabase) {
+    // En modo multiusuario (login activado) cada cuenta rellena su propio
+    // perfil durante el onboarding — no tiene sentido precargar aquí los
+    // datos de demostración de un usuario concreto para cualquier
+    // dispositivo/cuenta nueva.
+    saveItem(STORAGE_KEYS.seeded, true)
+    return
+  }
   const demo = generateDemoData()
   saveItem(STORAGE_KEYS.sessions, demo.sessions)
   saveItem(STORAGE_KEYS.profile, demo.profile)

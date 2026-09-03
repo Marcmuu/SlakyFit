@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { newId } from '../../lib/id'
+import { todayIso } from '../../lib/format'
 import { getExercise } from '../../data/exercises'
 import { fetchStarterRoutineBlueprints, instantiateStarterRoutine } from '../../data/starterRoutines'
 import type { RoutineBlueprint } from '../../data/starterRoutines'
@@ -14,15 +15,35 @@ const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MIN_DAYS = 1
 
 export default function RoutineWizard() {
-  const { routines, addRoutine, setActiveRoutineId } = useAppStore()
+  const { routines, addRoutine, setActiveRoutineId, profile, updateProfile, addBodyMetric } = useAppStore()
   const navigate = useNavigate()
   const [selectedDays, setSelectedDays] = useState<Set<number>>(new Set())
   const [blueprints, setBlueprints] = useState<RoutineBlueprint[] | null>(null)
   const [preview, setPreview] = useState<{ blueprint: RoutineBlueprint; dayCount?: number } | null>(null)
+  const [profileDone, setProfileDone] = useState(!!profile.name.trim())
+  const [profileForm, setProfileForm] = useState({
+    name: profile.name,
+    age: profile.age || '',
+    heightCm: profile.heightCm || '',
+    weightKg: profile.weightKg || '',
+  })
 
   useEffect(() => {
     fetchStarterRoutineBlueprints().then(setBlueprints)
   }, [])
+
+  function saveProfileStep() {
+    const weight = Number(profileForm.weightKg) || 0
+    updateProfile({
+      ...profile,
+      name: profileForm.name.trim(),
+      age: Number(profileForm.age) || 0,
+      heightCm: Number(profileForm.heightCm) || 0,
+      weightKg: weight,
+    })
+    if (weight > 0) addBodyMetric({ date: todayIso(), weight })
+    setProfileDone(true)
+  }
 
   const dayCount = selectedDays.size
 
@@ -65,6 +86,53 @@ export default function RoutineWizard() {
     addRoutine(routine)
     setActiveRoutineId(routine.id)
     navigate(`/routines/${routine.id}`)
+  }
+
+  if (!profileDone) {
+    return (
+      <div className="pb-8">
+        <PageHeader title="Cuéntanos sobre ti" subtitle="Así podemos calcular tu progreso" onBack />
+        <div className="px-4 flex flex-col gap-4">
+          <Card className="flex flex-col gap-3">
+            <Field label="Nombre">
+              <input
+                value={profileForm.name}
+                onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                className="input"
+                placeholder="Tu nombre"
+              />
+            </Field>
+            <Field label="Edad">
+              <input
+                type="number"
+                value={profileForm.age}
+                onChange={(e) => setProfileForm({ ...profileForm, age: e.target.value })}
+                className="input"
+              />
+            </Field>
+            <Field label="Altura (cm)">
+              <input
+                type="number"
+                value={profileForm.heightCm}
+                onChange={(e) => setProfileForm({ ...profileForm, heightCm: e.target.value })}
+                className="input"
+              />
+            </Field>
+            <Field label="Peso (kg)">
+              <input
+                type="number"
+                value={profileForm.weightKg}
+                onChange={(e) => setProfileForm({ ...profileForm, weightKg: e.target.value })}
+                className="input"
+              />
+            </Field>
+          </Card>
+          <Button size="lg" className="w-full" onClick={saveProfileStep} disabled={!profileForm.name.trim()}>
+            Continuar
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   if (preview) {
@@ -186,5 +254,14 @@ export default function RoutineWizard() {
         </Button>
       </div>
     </div>
+  )
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs text-base-500">{label}</span>
+      {children}
+    </label>
   )
 }
