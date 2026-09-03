@@ -88,6 +88,16 @@ export interface SessionExercise {
   comparisonNotes?: string
 }
 
+export interface Activity {
+  id: string
+  date: string
+  name: string
+  emoji: string
+  color: string
+  durationMin?: number
+  notes?: string
+}
+
 export interface WorkoutSession {
   id: string
   date: string

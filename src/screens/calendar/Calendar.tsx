@@ -8,7 +8,7 @@ import PageHeader from '../../components/PageHeader'
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
 export default function Calendar() {
-  const { sessions, routines, activeRoutineId } = useAppStore()
+  const { sessions, activities, routines, activeRoutineId } = useAppStore()
   const navigate = useNavigate()
   const activeRoutine = routines.find((r) => r.id === activeRoutineId)
   const [cursor, setCursor] = useState(() => {
@@ -25,6 +25,16 @@ export default function Calendar() {
     }
     return map
   }, [sessions])
+
+  const activitiesByDate = useMemo(() => {
+    const map = new Map<string, typeof activities>()
+    for (const a of activities) {
+      const arr = map.get(a.date) ?? []
+      arr.push(a)
+      map.set(a.date, arr)
+    }
+    return map
+  }, [activities])
 
   const year = cursor.getFullYear()
   const month = cursor.getMonth()
@@ -64,16 +74,19 @@ export default function Calendar() {
             if (day === null) return <div key={i} />
             const iso = isoOf(year, month, day)
             const daySessions = sessionsByDate.get(iso)
+            const dayActivities = activitiesByDate.get(iso)
             const isToday = iso === today
+            const hasContent = daySessions || dayActivities
             return (
               <button
                 key={i}
                 onClick={() => navigate(`/calendar/${iso}`)}
-                className={`aspect-square rounded-xl flex flex-col items-center justify-center gap-1 border ${
+                className={`relative aspect-square rounded-xl flex flex-col items-center justify-center gap-1 border ${
                   isToday ? 'border-brand' : 'border-transparent'
-                } ${daySessions ? 'bg-base-800' : 'bg-base-900/50'}`}
+                } ${hasContent ? 'bg-base-800' : 'bg-base-900/50'}`}
               >
-                <span className={`text-sm tabular ${daySessions ? 'font-bold text-base-100' : 'text-base-500'}`}>{day}</span>
+                {dayActivities && dayActivities[0] && <span className="absolute top-0.5 right-1 text-[10px] leading-none">{dayActivities[0].emoji}</span>}
+                <span className={`text-sm tabular ${hasContent ? 'font-bold text-base-100' : 'text-base-500'}`}>{day}</span>
                 {daySessions && (
                   <div className="flex gap-0.5">
                     {daySessions.slice(0, 3).map((s, si) => (

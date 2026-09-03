@@ -34,6 +34,7 @@ export const STORAGE_KEYS = {
   activeRoutineId: 'activeRoutineId',
   routinesMigratedV1: 'routines-migrated-v1',
   rirMigratedV1: 'rir-migrated-v1',
+  activities: 'activities',
 } as const
 
 const EXPORT_FORMAT = 'slakyfit-backup'
@@ -58,6 +59,20 @@ export function exportAllData(): SlakyFitBackup {
     }
   }
   return { app: EXPORT_FORMAT, version: EXPORT_VERSION, exportedAt: new Date().toISOString(), data }
+}
+
+// Se usa cuando un usuario inicia sesión por primera vez en una cuenta nueva y
+// decide no partir de los datos de este dispositivo (ver AuthGate) — deja el
+// dispositivo en blanco antes de empujarlo como estado inicial de esa cuenta.
+export function resetLocalDataForNewAccount(): void {
+  saveItem(STORAGE_KEYS.sessions, [])
+  saveItem(STORAGE_KEYS.routines, [])
+  saveItem(STORAGE_KEYS.activeRoutineId, null)
+  saveItem(STORAGE_KEYS.activeWorkout, null)
+  saveItem(STORAGE_KEYS.goals, [])
+  saveItem(STORAGE_KEYS.bodyMetrics, [])
+  saveItem(STORAGE_KEYS.activities, [])
+  saveItem(STORAGE_KEYS.profile, { name: '', age: 0, heightCm: 0, weightKg: 0, experience: '' })
 }
 
 export function importAllData(payload: unknown): void {

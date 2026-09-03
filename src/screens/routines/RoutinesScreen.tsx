@@ -7,6 +7,7 @@ import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
 import ActionSheet from '../../components/ActionSheet'
+import { starterRoutineBlueprints, instantiateStarterRoutine } from '../../data/starterRoutines'
 import type { Routine } from '../../types'
 
 export default function RoutinesScreen() {
@@ -25,6 +26,15 @@ export default function RoutinesScreen() {
       updatedAt: now,
     }
     addRoutine(routine)
+    navigate(`/routines/${routine.id}`)
+  }
+
+  function useTemplate(blueprintId: string) {
+    const blueprint = starterRoutineBlueprints.find((b) => b.id === blueprintId)
+    if (!blueprint) return
+    const routine = instantiateStarterRoutine(blueprint)
+    addRoutine(routine)
+    setActiveRoutineId(routine.id)
     navigate(`/routines/${routine.id}`)
   }
 
@@ -60,8 +70,24 @@ export default function RoutinesScreen() {
       />
       <div className="px-4 flex flex-col gap-3">
         {routines.length === 0 && (
-          <Card className="text-center py-8">
-            <p className="text-base-400">Todavía no tienes ninguna rutina.</p>
+          <Card>
+            <p className="text-sm font-bold mb-1">Todavía no tienes ninguna rutina</p>
+            <p className="text-xs text-base-500 mb-3">Empieza desde una plantilla o crea la tuya desde cero.</p>
+            <div className="flex flex-col gap-2">
+              {starterRoutineBlueprints.map((blueprint) => (
+                <button key={blueprint.id} onClick={() => useTemplate(blueprint.id)} className="text-left">
+                  <div className="rounded-xl border border-base-700 p-3 active:bg-base-800">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-base-100">{blueprint.name}</p>
+                      <span className="text-xs text-base-500 tabular shrink-0">
+                        {blueprint.days.length} día{blueprint.days.length === 1 ? '' : 's'}
+                      </span>
+                    </div>
+                    <p className="text-xs text-base-500 mt-0.5">{blueprint.days.map((d) => d.name).join(' · ')}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
           </Card>
         )}
 

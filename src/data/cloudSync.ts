@@ -34,3 +34,21 @@ export function hasMeaningfulLocalData(local: SlakyFitBackup): boolean {
   const sessions = (local.data.sessions as unknown[] | undefined) ?? []
   return sessions.length > 0
 }
+
+// Marca, solo para esta pestaña/sesión del navegador, que ya se resolvió qué
+// datos usar para este usuario (nube existente aplicada, o elección de "usar
+// este dispositivo"/"empezar de cero" ya hecha) — evita repetir el flujo en
+// cada recarga automática que dispara la propia resolución.
+const RESOLVED_KEY = 'slakyfit:cloudResolved'
+
+export function markUserResolved(userId: string): void {
+  sessionStorage.setItem(RESOLVED_KEY, userId)
+}
+
+export function isUserResolved(userId: string): boolean {
+  return sessionStorage.getItem(RESOLVED_KEY) === userId
+}
+
+export function clearResolvedMarker(): void {
+  sessionStorage.removeItem(RESOLVED_KEY)
+}

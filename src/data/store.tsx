@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import type { User } from '@supabase/supabase-js'
-import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout, Routine } from '../types'
+import type { WorkoutSession, Profile, Goal, BodyMetric, Program, ActiveWorkout, Routine, Activity } from '../types'
 import { loadItem, saveItem, hasItem, STORAGE_KEYS } from './storage'
 import { generateDemoData } from './demoSeed'
 import { migrateRoutinesIfNeeded } from './migrateRoutines'
@@ -30,6 +30,10 @@ interface AppStoreValue {
   deleteRoutine: (id: string) => void
   activeRoutineId: string | null
   setActiveRoutineId: (id: string | null) => void
+  activities: Activity[]
+  addActivity: (activity: Activity) => void
+  updateActivity: (activity: Activity) => void
+  deleteActivity: (id: string) => void
   user: User | null
   authReady: boolean
   lastSyncedAt: string | null
@@ -69,6 +73,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   const [activeRoutineId, setActiveRoutineIdState] = useState<string | null>(() =>
     loadItem(STORAGE_KEYS.activeRoutineId, null),
   )
+  const [activities, setActivities] = useState<Activity[]>(() => loadItem(STORAGE_KEYS.activities, []))
 
   const [user, setUser] = useState<User | null>(null)
   const [authReady, setAuthReady] = useState(!supabase)
@@ -111,7 +116,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
     }, 1500)
     return () => clearTimeout(timeout)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, sessions, profile, goals, bodyMetrics, routines, activeRoutineId])
+  }, [user, sessions, profile, goals, bodyMetrics, routines, activeRoutineId, activities])
 
   useEffect(() => saveItem(STORAGE_KEYS.sessions, sessions), [sessions])
   useEffect(() => saveItem(STORAGE_KEYS.profile, profile), [profile])
@@ -120,6 +125,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => saveItem(STORAGE_KEYS.activeWorkout, activeWorkout), [activeWorkout])
   useEffect(() => saveItem(STORAGE_KEYS.routines, routines), [routines])
   useEffect(() => saveItem(STORAGE_KEYS.activeRoutineId, activeRoutineId), [activeRoutineId])
+  useEffect(() => saveItem(STORAGE_KEYS.activities, activities), [activities])
 
   const value = useMemo<AppStoreValue>(
     () => ({
@@ -149,6 +155,10 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       },
       activeRoutineId,
       setActiveRoutineId: setActiveRoutineIdState,
+      activities,
+      addActivity: (activity) => setActivities((prev) => [...prev, activity]),
+      updateActivity: (activity) => setActivities((prev) => prev.map((a) => (a.id === activity.id ? activity : a))),
+      deleteActivity: (id) => setActivities((prev) => prev.filter((a) => a.id !== id)),
       user,
       authReady,
       lastSyncedAt,
@@ -156,7 +166,7 @@ export function AppStoreProvider({ children }: { children: React.ReactNode }) {
       syncNow,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sessions, profile, goals, bodyMetrics, program, activeWorkout, routines, activeRoutineId, user, authReady, lastSyncedAt, syncing],
+    [sessions, profile, goals, bodyMetrics, program, activeWorkout, routines, activeRoutineId, activities, user, authReady, lastSyncedAt, syncing],
   )
 
   return <AppStoreContext.Provider value={value}>{children}</AppStoreContext.Provider>
