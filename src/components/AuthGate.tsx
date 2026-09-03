@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useAppStore } from '../data/store'
 import { supabase } from '../data/supabaseClient'
 import { fetchCloudBackup, applyCloudBackup, pushCloudState, markUserResolved, isUserResolved } from '../data/cloudSync'
-import { resetLocalDataForNewAccount } from '../data/storage'
+import { resetLocalDataForNewAccount, exportAllData } from '../data/storage'
 import Button from './Button'
 import ActionSheet from './ActionSheet'
+import type { Routine, WorkoutSession } from '../types'
 
 export default function AuthGate({ children }: { children: React.ReactNode }) {
   const { user, authReady } = useAppStore()
@@ -62,6 +63,14 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
       setResolving(false)
     }
   }
+
+  const localSummary = useMemo(() => {
+    if (!needsChoice) return null
+    const backup = exportAllData()
+    const routines = (backup.data.routines as Routine[] | undefined) ?? []
+    const sessions = (backup.data.sessions as WorkoutSession[] | undefined) ?? []
+    return { routines, sessions }
+  }, [needsChoice])
 
   async function submit() {
     if (!supabase) return
@@ -123,21 +132,37 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         )}
       </div>
 
-      {needsChoice && (
+      {needsChoice && localSummary && (
         <ActionSheet>
-          <p className="text-lg font-bold mb-1">¿Primera vez con esta cuenta?</p>
-          <p className="text-sm text-base-400 mb-5">
-            No hay datos guardados todavía para tu cuenta. ¿Quieres partir de lo que ya hay en este dispositivo, o empezar en blanco?
-          </p>
+          <p className="text-lg font-bold mb-1">Todavía no hay nada guardado para esta cuenta</p>
+          <p className="text-sm text-base-400 mb-4">Este dispositivo tiene datos locales. Elige qué hacer con ellos:</p>
+
+          <div className="rounded-xl bg-base-800/60 border border-base-700 p-3 mb-4 text-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-base-400">Rutinas en este dispositivo</span>
+              <span className="font-semibold text-base-100 tabular">{localSummary.routines.length}</span>
+            </div>
+            {localSummary.routines.length > 0 && (
+              <p className="text-xs text-base-500 mt-0.5 truncate">{localSummary.routines.map((r) => r.name).join(', ')}</p>
+            )}
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-base-400">Entrenamientos registrados</span>
+              <span className="font-semibold text-base-100 tabular">{localSummary.sessions.length}</span>
+            </div>
+          </div>
+
           {error && <p className="text-xs text-accent-push mb-3">{error}</p>}
           <div className="flex flex-col gap-2.5">
             <Button size="lg" onClick={chooseThisDevice} disabled={resolving}>
-              Usar los datos de este dispositivo
+              {resolving ? 'Un momento…' : 'Sí, quedarme con esto y vincularlo a mi cuenta'}
             </Button>
             <Button variant="secondary" size="lg" onClick={chooseFresh} disabled={resolving}>
-              Empezar de cero
+              No, empezar esta cuenta en blanco
             </Button>
           </div>
+          <p className="text-[11px] text-base-500 mt-3 text-center">
+            "Empezar en blanco" borra lo de arriba de este dispositivo — úsalo solo si es un usuario nuevo, no tú mismo en otro sitio.
+          </p>
         </ActionSheet>
       )}
     </div>

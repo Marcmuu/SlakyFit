@@ -19,6 +19,8 @@ interface RoutineBlueprint {
   id: string
   name: string
   days: DayBlueprint[]
+  minDays?: number
+  maxDays?: number
 }
 
 function item(exerciseId: string, targetSets: number, repMin: number, repMax: number): BlueprintItem {
@@ -28,6 +30,11 @@ function item(exerciseId: string, targetSets: number, repMin: number, repMax: nu
 const pushPullLegs: RoutineBlueprint = {
   id: 'starter-ppl',
   name: 'Push Pull Legs',
+  // El "pool" completo son los 5 días clásicos (Push A/Pull A/Pierna/Push B/Pull B);
+  // con menos días se usan los primeros N, así 3 días sigue siendo un ciclo
+  // completo Push-Pull-Pierna y no una versión recortada rara.
+  minDays: 3,
+  maxDays: 5,
   days: routineSequence.map((templateId) => {
     const template = routineTemplates.find((t) => t.id === templateId)!
     return {
@@ -184,9 +191,10 @@ const broSplit: RoutineBlueprint = {
 
 export const starterRoutineBlueprints: RoutineBlueprint[] = [pushPullLegs, upperLower, fullBody, broSplit]
 
-export function instantiateStarterRoutine(blueprint: RoutineBlueprint): Routine {
+export function instantiateStarterRoutine(blueprint: RoutineBlueprint, dayCount?: number): Routine {
   const now = new Date().toISOString()
-  const days: RoutineDay[] = blueprint.days.map((day, i) => ({
+  const chosenDays = dayCount ? blueprint.days.slice(0, dayCount) : blueprint.days
+  const days: RoutineDay[] = chosenDays.map((day, i) => ({
     id: newId('day'),
     name: day.name,
     order: i + 1,
