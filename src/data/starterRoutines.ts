@@ -28,7 +28,7 @@ function item(exerciseId: string, targetSets: number, repMin: number, repMax: nu
   return { exerciseId, targetSets, repMin, repMax }
 }
 
-const pushPullLegs: RoutineBlueprint = {
+export const pushPullLegs: RoutineBlueprint = {
   id: 'starter-ppl',
   name: 'Push Pull Legs',
   // El "pool" completo son los 5 días clásicos (Push A/Pull A/Pierna/Push B/Pull B);
@@ -48,7 +48,7 @@ const pushPullLegs: RoutineBlueprint = {
   }),
 }
 
-const upperLower: RoutineBlueprint = {
+export const upperLower: RoutineBlueprint = {
   id: 'starter-upper-lower',
   name: 'Torso / Pierna',
   days: [
@@ -143,7 +143,7 @@ const fullBody2Day: RoutineBlueprint = {
   ],
 }
 
-const fullBody: RoutineBlueprint = {
+export const fullBody: RoutineBlueprint = {
   id: 'starter-full-body',
   name: 'Full Body',
   days: [
@@ -180,7 +180,7 @@ const fullBody: RoutineBlueprint = {
   ],
 }
 
-const broSplit: RoutineBlueprint = {
+export const broSplit: RoutineBlueprint = {
   id: 'starter-bro-split',
   name: 'Bro Split',
   days: [

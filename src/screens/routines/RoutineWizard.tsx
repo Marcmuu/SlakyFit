@@ -1,11 +1,15 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { newId } from '../../lib/id'
 import { todayIso } from '../../lib/format'
-import { getExercise } from '../../data/exercises'
+import { exercises, getExercise } from '../../data/exercises'
+import { matchesExerciseQuery } from '../../lib/exerciseSearch'
+import { equipmentLabels } from '../../lib/equipmentLabels'
 import { fetchStarterRoutineBlueprints, instantiateStarterRoutine } from '../../data/starterRoutines'
-import type { RoutineBlueprint } from '../../data/starterRoutines'
+import type { RoutineBlueprint, BlueprintItem, DayBlueprint } from '../../data/starterRoutines'
+import { dayCatalog, CATEGORY_LABELS, CATEGORY_ORDER } from '../../data/dayCatalog'
+import type { DayCategory } from '../../data/dayCatalog'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
@@ -13,6 +17,8 @@ import type { Routine } from '../../types'
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 const MIN_DAYS = 1
+
+type AssemblyMode = 'template' | 'byDay' | null
 
 export default function RoutineWizard() {
   const { routines, addRoutine, setActiveRoutineId, profile, updateProfile, addBodyMetric } = useAppStore()
@@ -28,9 +34,26 @@ export default function RoutineWizard() {
     weightKg: profile.weightKg || '',
   })
 
+  const [assemblyMode, setAssemblyMode] = useState<AssemblyMode>(null)
+  const [dayPlan, setDayPlan] = useState<(DayBlueprint | null)[]>([])
+  const [editingSlot, setEditingSlot] = useState<number | null>(null)
+  const [pickingCategory, setPickingCategory] = useState<DayCategory | null>(null)
+  const [customBuilder, setCustomBuilder] = useState<{ name: string; items: BlueprintItem[] } | null>(null)
+  const [customQuery, setCustomQuery] = useState('')
+
   useEffect(() => {
     fetchStarterRoutineBlueprints().then(setBlueprints)
   }, [])
+
+  const dayCount = selectedDays.size
+
+  useEffect(() => {
+    if (assemblyMode !== 'byDay') return
+    setDayPlan((prev) => {
+      const next = Array.from({ length: dayCount }, (_, i) => prev[i] ?? null)
+      return next
+    })
+  }, [assemblyMode, dayCount])
 
   function saveProfileStep() {
     const weight = Number(profileForm.weightKg) || 0
@@ -44,8 +67,6 @@ export default function RoutineWizard() {
     if (weight > 0) addBodyMetric({ date: todayIso(), weight })
     setProfileDone(true)
   }
-
-  const dayCount = selectedDays.size
 
   function toggleDay(i: number) {
     setSelectedDays((prev) => {
@@ -86,6 +107,51 @@ export default function RoutineWizard() {
     addRoutine(routine)
     setActiveRoutineId(routine.id)
     navigate(`/routines/${routine.id}`)
+  }
+
+  function assignSlot(day: DayBlueprint) {
+    if (editingSlot === null) return
+    setDayPlan((prev) => prev.map((d, i) => (i === editingSlot ? day : d)))
+    setEditingSlot(null)
+    setPickingCategory(null)
+    setCustomBuilder(null)
+  }
+
+  function startCustomDay() {
+    setCustomBuilder({ name: '', items: [] })
+    setCustomQuery('')
+  }
+
+  function addCustomExercise(exerciseId: string) {
+    if (!customBuilder) return
+    const isTime = getExercise(exerciseId)?.logType === 'time'
+    setCustomBuilder({
+      ...customBuilder,
+      items: [...customBuilder.items, { exerciseId, targetSets: 3, repMin: isTime ? 20 : 8, repMax: isTime ? 40 : 12 }],
+    })
+    setCustomQuery('')
+  }
+
+  function removeCustomExercise(index: number) {
+    if (!customBuilder) return
+    setCustomBuilder({ ...customBuilder, items: customBuilder.items.filter((_, i) => i !== index) })
+  }
+
+  function saveCustomDay() {
+    if (!customBuilder || customBuilder.items.length === 0) return
+    assignSlot({ name: customBuilder.name.trim() || `Día ${pickingCategory ? CATEGORY_LABELS[pickingCategory] : 'personalizado'}`, items: customBuilder.items })
+  }
+
+  const customSearchResults = useMemo(() => {
+    if (!customBuilder) return []
+    return exercises.filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, customQuery)).slice(0, 30)
+  }, [customBuilder, customQuery])
+
+  function confirmByDayPlan() {
+    const days = dayPlan.filter((d): d is DayBlueprint => d !== null)
+    if (days.length !== dayCount) return
+    const syntheticBlueprint: RoutineBlueprint = { id: 'custom-by-day', name: `Rutina ${routines.length + 1}`, days }
+    setPreview({ blueprint: syntheticBlueprint })
   }
 
   if (!profileDone) {
@@ -170,6 +236,113 @@ export default function RoutineWizard() {
     )
   }
 
+  if (editingSlot !== null) {
+    return (
+      <div className="pb-8">
+        <PageHeader
+          title={`Día ${editingSlot + 1}`}
+          subtitle={customBuilder ? 'Añade los ejercicios de este día' : '¿Qué tipo de día quieres?'}
+          onBack={() => {
+            if (customBuilder) {
+              setCustomBuilder(null)
+              return
+            }
+            setEditingSlot(null)
+            setPickingCategory(null)
+          }}
+        />
+        <div className="px-4 flex flex-col gap-4">
+          {!customBuilder && (
+            <>
+              <div className="flex flex-wrap gap-2">
+                {CATEGORY_ORDER.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setPickingCategory(cat)}
+                    className={`px-3 py-2 rounded-full text-xs font-semibold border ${
+                      pickingCategory === cat ? 'bg-brand text-base-950 border-brand' : 'border-base-700 text-base-300'
+                    }`}
+                  >
+                    {CATEGORY_LABELS[cat]}
+                  </button>
+                ))}
+              </div>
+
+              {pickingCategory && (
+                <div className="flex flex-col gap-2">
+                  {dayCatalog
+                    .filter((d) => d.category === pickingCategory)
+                    .map((d) => (
+                      <button key={d.id} onClick={() => assignSlot(d.blueprint)} className="text-left">
+                        <Card className="active:bg-base-800">
+                          <p className="font-semibold text-base-100">{d.blueprint.name}</p>
+                          <p className="text-xs text-base-500 mt-0.5">{d.blueprint.items.map((it) => getExercise(it.exerciseId)?.name ?? it.exerciseId).join(' · ')}</p>
+                        </Card>
+                      </button>
+                    ))}
+                </div>
+              )}
+
+              <Button variant="secondary" size="lg" className="w-full" onClick={startCustomDay}>
+                Crear este día desde cero
+              </Button>
+            </>
+          )}
+
+          {customBuilder && (
+            <>
+              <Field label="Nombre del día">
+                <input
+                  value={customBuilder.name}
+                  onChange={(e) => setCustomBuilder({ ...customBuilder, name: e.target.value })}
+                  placeholder={pickingCategory ? CATEGORY_LABELS[pickingCategory] : 'Mi día'}
+                  className="input"
+                />
+              </Field>
+
+              {customBuilder.items.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  {customBuilder.items.map((it, i) => (
+                    <Card key={i} className="p-3 flex items-center justify-between">
+                      <span className="text-sm font-semibold text-base-100">{getExercise(it.exerciseId)?.name ?? it.exerciseId}</span>
+                      <button onClick={() => removeCustomExercise(i)} className="text-xs text-accent-push shrink-0 ml-2">
+                        Quitar
+                      </button>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              <input
+                autoFocus
+                value={customQuery}
+                onChange={(e) => setCustomQuery(e.target.value)}
+                placeholder="Buscar ejercicio por nombre o músculo..."
+                className="input"
+              />
+              <div className="flex flex-col gap-2">
+                {customSearchResults.map((ex) => (
+                  <button key={ex.id} onClick={() => addCustomExercise(ex.id)} className="text-left">
+                    <Card className="active:bg-base-800 p-3">
+                      <p className="font-semibold text-base-100">{ex.name}</p>
+                      <p className="text-xs text-base-500">
+                        {ex.mainMuscles.join(', ')} · {equipmentLabels[ex.equipment]}
+                      </p>
+                    </Card>
+                  </button>
+                ))}
+              </div>
+
+              <Button size="lg" className="w-full" onClick={saveCustomDay} disabled={customBuilder.items.length === 0}>
+                Guardar día
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="pb-8">
       <PageHeader title="Crear rutina" subtitle="Elige tus días y te sugerimos una rutina" onBack />
@@ -200,8 +373,29 @@ export default function RoutineWizard() {
           </p>
         </Card>
 
-        {dayCount >= MIN_DAYS && (
+        {dayCount >= MIN_DAYS && assemblyMode === null && (
+          <div className="flex flex-col gap-2">
+            <button onClick={() => setAssemblyMode('template')} className="text-left">
+              <Card className="active:bg-base-800">
+                <p className="font-semibold text-base-100">Usar una plantilla completa</p>
+                <p className="text-xs text-base-500 mt-0.5">Push Pull Legs, Full Body, Torso/Pierna… ya montadas.</p>
+              </Card>
+            </button>
+            <button onClick={() => setAssemblyMode('byDay')} className="text-left">
+              <Card className="active:bg-base-800">
+                <p className="font-semibold text-base-100">Elegir cada día por separado</p>
+                <p className="text-xs text-base-500 mt-0.5">Mezcla Push A, Pull B, Full Body C... o crea un día desde cero.</p>
+              </Card>
+            </button>
+          </div>
+        )}
+
+        {dayCount >= MIN_DAYS && assemblyMode === 'template' && (
           <>
+            <button className="text-xs font-semibold text-brand text-left" onClick={() => setAssemblyMode(null)}>
+              ‹ Cambiar cómo montarla
+            </button>
+
             {!blueprints && <p className="text-sm text-base-500 text-center py-4">Cargando plantillas…</p>}
 
             {blueprints && compatible.length > 0 && (
@@ -246,6 +440,35 @@ export default function RoutineWizard() {
                 </div>
               </div>
             )}
+          </>
+        )}
+
+        {dayCount >= MIN_DAYS && assemblyMode === 'byDay' && (
+          <>
+            <button className="text-xs font-semibold text-brand text-left" onClick={() => setAssemblyMode(null)}>
+              ‹ Cambiar cómo montarla
+            </button>
+            <div className="flex flex-col gap-2">
+              {dayPlan.map((day, i) => (
+                <button key={i} onClick={() => setEditingSlot(i)} className="text-left">
+                  <Card className="active:bg-base-800">
+                    {day ? (
+                      <>
+                        <p className="font-semibold text-base-100">
+                          Día {i + 1}: {day.name}
+                        </p>
+                        <p className="text-xs text-base-500 mt-0.5">{day.items.map((it) => getExercise(it.exerciseId)?.name ?? it.exerciseId).join(' · ')}</p>
+                      </>
+                    ) : (
+                      <p className="font-semibold text-base-400">Día {i + 1}: toca para elegir</p>
+                    )}
+                  </Card>
+                </button>
+              ))}
+            </div>
+            <Button size="lg" className="w-full" onClick={confirmByDayPlan} disabled={dayPlan.some((d) => d === null)}>
+              Continuar
+            </Button>
           </>
         )}
 
