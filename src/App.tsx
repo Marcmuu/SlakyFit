@@ -23,6 +23,7 @@ const Progress = lazy(() => import('./screens/progress/Progress'))
 const ExerciseDetail = lazy(() => import('./screens/library/ExerciseDetail'))
 
 const RoutinesScreen = lazy(() => import('./screens/routines/RoutinesScreen'))
+const RoutineWizard = lazy(() => import('./screens/routines/RoutineWizard'))
 const RoutineEditor = lazy(() => import('./screens/routines/RoutineEditor'))
 const DayEditor = lazy(() => import('./screens/routines/DayEditor'))
 const AnalyzeRoutine = lazy(() => import('./screens/routines/AnalyzeRoutine'))
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="/library" element={<Library />} />
             <Route path="/library/:exerciseId" element={<ExerciseDetail />} />
             <Route path="/routines" element={<RoutinesScreen />} />
+            <Route path="/routines/wizard" element={<RoutineWizard />} />
             <Route path="/routines/:routineId" element={<RoutineEditor />} />
             <Route path="/routines/:routineId/day/:dayId" element={<DayEditor />} />
             <Route path="/routines/analyze" element={<AnalyzeRoutine />} />

@@ -2,20 +2,21 @@ import type { Routine, RoutineDay } from '../types'
 import { newId } from '../lib/id'
 import { colorForDayIndex } from '../lib/color'
 import { routineTemplates, routineSequence } from './routines'
+import { supabase } from './supabaseClient'
 
-interface BlueprintItem {
+export interface BlueprintItem {
   exerciseId: string
   targetSets: number
   repMin: number
   repMax: number
 }
 
-interface DayBlueprint {
+export interface DayBlueprint {
   name: string
   items: BlueprintItem[]
 }
 
-interface RoutineBlueprint {
+export interface RoutineBlueprint {
   id: string
   name: string
   days: DayBlueprint[]
@@ -189,7 +190,36 @@ const broSplit: RoutineBlueprint = {
   ],
 }
 
+// Catálogo local: se usa cuando no hay Supabase configurado, o si la consulta
+// a la tabla `routine_templates` falla — así el catálogo nunca se queda vacío.
 export const starterRoutineBlueprints: RoutineBlueprint[] = [pushPullLegs, upperLower, fullBody, broSplit]
+
+interface RoutineTemplateRow {
+  id: string
+  name: string
+  min_days: number | null
+  max_days: number | null
+  days: DayBlueprint[]
+}
+
+// Las plantillas predefinidas viven en la tabla `routine_templates` de Supabase
+// para poder añadir o editar una sin tocar código ni desplegar — ver
+// scratchpad/seed_templates.sql para el esquema y la semilla inicial.
+export async function fetchStarterRoutineBlueprints(): Promise<RoutineBlueprint[]> {
+  if (!supabase) return starterRoutineBlueprints
+  const { data, error } = await supabase
+    .from('routine_templates')
+    .select('id, name, min_days, max_days, days')
+    .order('sort_order', { ascending: true })
+  if (error || !data || data.length === 0) return starterRoutineBlueprints
+  return (data as RoutineTemplateRow[]).map((row) => ({
+    id: row.id,
+    name: row.name,
+    minDays: row.min_days ?? undefined,
+    maxDays: row.max_days ?? undefined,
+    days: row.days,
+  }))
+}
 
 export function instantiateStarterRoutine(blueprint: RoutineBlueprint, dayCount?: number): Routine {
   const now = new Date().toISOString()
