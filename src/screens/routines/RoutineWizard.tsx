@@ -100,7 +100,10 @@ export default function RoutineWizard() {
     const routine = instantiateStarterRoutine(preview.blueprint, preview.dayCount)
     addRoutine(routine)
     setActiveRoutineId(routine.id)
-    navigate(`/routines/${routine.id}`)
+    // Ya tiene ejercicios cargados y queda activa — al inicio para poder
+    // empezar a entrenar ya mismo. Si luego quiere tocar algo, la edita
+    // desde Mis rutinas.
+    navigate('/', { replace: true })
   }
 
   function createFromScratch() {
