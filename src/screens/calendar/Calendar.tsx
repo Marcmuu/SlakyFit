@@ -49,7 +49,7 @@ export default function Calendar() {
 
   return (
     <div>
-      <PageHeader title="Calendario" subtitle="Tu historial de entrenamientos" />
+      <PageHeader title="Calendario" subtitle="Tu historial de entrenos" />
       <div className="px-4">
         <div className="flex items-center justify-between mb-4">
           <button onClick={() => setCursor(new Date(year, month - 1, 1))} className="w-9 h-9 rounded-full bg-base-800 text-base-300">

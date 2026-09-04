@@ -195,7 +195,7 @@ export default function ExerciseDetail() {
         )}
 
         <Button size="lg" className="w-full" disabled={!activeWorkout} onClick={addToWorkout}>
-          {activeWorkout ? 'Añadir a entrenamiento' : 'Inicia un entrenamiento para añadirlo'}
+          {activeWorkout ? 'Añadir al entreno' : 'Empieza un entreno para añadirlo'}
         </Button>
       </div>
     </div>

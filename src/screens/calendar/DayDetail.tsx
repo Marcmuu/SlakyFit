@@ -27,7 +27,7 @@ export default function DayDetail() {
       <div className="px-4 flex flex-col gap-4">
         {daySessions.length === 0 && dayActivities.length === 0 && (
           <Card className="text-center py-8">
-            <p className="text-base-400">Sin entrenamiento ni actividad registrada este día.</p>
+            <p className="text-base-400">Sin entreno ni actividad este día.</p>
           </Card>
         )}
 
@@ -114,7 +114,7 @@ export default function DayDetail() {
         {date && (
           <div className="flex flex-col gap-2.5">
             <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate(`/calendar/${date}/session/new`)}>
-              + Añadir entrenamiento a este día
+              + Añadir entreno a este día
             </Button>
             <Button variant="secondary" size="lg" className="w-full" onClick={() => navigate(`/calendar/${date}/activity/new`)}>
               + Añadir actividad deportiva
@@ -125,7 +125,7 @@ export default function DayDetail() {
 
       {confirmDeleteId && (
         <ActionSheet onDismiss={() => setConfirmDeleteId(null)}>
-          <p className="text-lg font-bold mb-1">¿Eliminar este entrenamiento?</p>
+          <p className="text-lg font-bold mb-1">¿Eliminar este entreno?</p>
           <p className="text-sm text-base-400 mb-5">Se borrarán todos los ejercicios y series registrados este día. No se puede deshacer.</p>
           <div className="flex flex-col gap-2.5">
             <Button
@@ -136,7 +136,7 @@ export default function DayDetail() {
                 setConfirmDeleteId(null)
               }}
             >
-              Eliminar entrenamiento
+              Eliminar entreno
             </Button>
             <Button variant="secondary" size="lg" onClick={() => setConfirmDeleteId(null)}>
               Cancelar

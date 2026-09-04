@@ -99,7 +99,7 @@ export default function RoutinesScreen() {
         <ActionSheet onDismiss={() => setConfirmDeleteId(null)}>
           <p className="text-lg font-bold mb-1">¿Eliminar "{routineToDelete.name}"?</p>
           <p className="text-sm text-base-400 mb-5">
-            Se borrará la rutina y sus días. Los entrenamientos que ya registraste con ella no se ven afectados.
+            Se borrará la rutina y sus días. Los entrenos que ya registraste con ella no se ven afectados.
           </p>
           <div className="flex flex-col gap-2.5">
             <Button

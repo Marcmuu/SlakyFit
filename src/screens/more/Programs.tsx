@@ -62,7 +62,7 @@ export default function Programs() {
 
         <Card>
           <p className="text-sm font-bold mb-2">Historial de programas</p>
-          <p className="text-sm text-base-500">Todavía no hay programas anteriores. Cuando cambies de programa, quedará aquí registrado sin borrar tus entrenamientos.</p>
+          <p className="text-sm text-base-500">Todavía no hay programas anteriores. Cuando cambies de programa, quedará aquí registrado sin borrar tus entrenos.</p>
         </Card>
       </div>
     </div>

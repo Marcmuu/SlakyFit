@@ -95,7 +95,7 @@ export default function SelectWorkout() {
         </Card>
 
         <Button size="lg" className="w-full" onClick={start}>
-          {activeWorkout ? 'Continuar entrenamiento en curso' : `Empezar ${selectedDay?.name ?? ''}`}
+          {activeWorkout ? 'Continuar entreno en curso' : `Empezar ${selectedDay?.name ?? ''}`}
         </Button>
       </div>
     </div>

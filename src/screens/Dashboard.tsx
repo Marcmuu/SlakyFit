@@ -53,9 +53,9 @@ export default function Dashboard() {
 
       {activeWorkout && (
         <Card className="!border-brand/40 !bg-brand/5">
-          <p className="text-sm text-brand font-semibold mb-1">Entrenamiento en curso</p>
+          <p className="text-sm text-brand font-semibold mb-1">Entreno en curso</p>
           <p className="text-base-300 text-sm mb-3">Tienes {activeWorkout.dayName} sin terminar.</p>
-          <Button className="w-full" onClick={() => navigate('/train/session')}>Continuar entrenamiento</Button>
+          <Button className="w-full" onClick={() => navigate('/train/session')}>Continuar entreno</Button>
         </Card>
       )}
 
@@ -68,7 +68,7 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-2 gap-3 mb-4 text-sm">
           <div>
-            <p className="text-base-500">Último entrenamiento</p>
+            <p className="text-base-500">Último entreno</p>
             <p className="font-semibold text-base-100">{lastSession ? lastSession.dayName : 'Sin registros todavía'}</p>
             {lastSession && <p className="text-xs text-base-500">{formatDayLabel(lastSession.date)}</p>}
           </div>
@@ -80,17 +80,17 @@ export default function Dashboard() {
         </div>
 
         <Button size="lg" className="w-full" onClick={startRecommended}>
-          {activeWorkout ? 'Continuar entrenamiento' : recommendedDay ? 'Empezar entrenamiento' : 'Crear rutina'}
+          {activeWorkout ? 'Continuar entreno' : recommendedDay ? 'Empezar entreno' : 'Crear rutina'}
         </Button>
         <button className="w-full text-center text-sm text-base-400 mt-3 py-1" onClick={() => navigate('/train')}>
-          Cambiar entrenamiento
+          Cambiar entreno
         </button>
       </Card>
 
       <Card>
         <div className="flex items-center justify-between mb-3">
           <p className="text-sm font-bold">Esta semana</p>
-          <span className="text-xs text-base-500">{sessionsThisWeek} entrenamientos</span>
+          <span className="text-xs text-base-500">{sessionsThisWeek} entrenos</span>
         </div>
         <WeekStrip sessions={sessions} />
       </Card>

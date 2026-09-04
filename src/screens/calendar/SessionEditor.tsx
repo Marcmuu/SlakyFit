@@ -98,7 +98,7 @@ export default function SessionEditor() {
     return (
       <div>
         <PageHeader title="Entrenamiento" onBack />
-        <p className="px-4 text-base-400">No se encontró este entrenamiento.</p>
+        <p className="px-4 text-base-400">No se encontró este entreno.</p>
       </div>
     )
   }
@@ -152,7 +152,7 @@ export default function SessionEditor() {
 
   return (
     <div className="pb-8">
-      <PageHeader title={isNew ? 'Añadir entrenamiento' : 'Editar entrenamiento'} onBack />
+      <PageHeader title={isNew ? 'Añadir entreno' : 'Editar entreno'} onBack />
       <div className="px-4 flex flex-col gap-4">
         <div>
           <p className="text-xs text-base-500 mb-2">Fecha</p>
@@ -402,7 +402,7 @@ export default function SessionEditor() {
         <ActionSheet onDismiss={() => setPendingDay(null)}>
           <p className="text-lg font-bold mb-1">¿Sustituir los ejercicios?</p>
           <p className="text-sm text-base-400 mb-5">
-            Ya tienes {session.exercises.length} ejercicio{session.exercises.length === 1 ? '' : 's'} en este entrenamiento. Cargar{' '}
+            Ya tienes {session.exercises.length} ejercicio{session.exercises.length === 1 ? '' : 's'} en este entreno. Cargar{' '}
             <span className="text-base-200 font-semibold">{pendingDay.day.name}</span> los sustituirá por los de ese día.
           </p>
           <div className="flex flex-col gap-2.5">

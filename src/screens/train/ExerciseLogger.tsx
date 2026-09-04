@@ -177,7 +177,7 @@ export default function ExerciseLogger() {
 
         {warmup.length > 0 && (
           <Card>
-            <p className="text-xs text-base-500 mb-2">Aproximación sugerida (no cuenta como serie efectiva)</p>
+            <p className="text-xs text-base-500 mb-2">Calentamiento sugerido (no cuenta como serie)</p>
             <div className="flex flex-col gap-1">
               {warmup.map((w, i) => (
                 <div key={i} className="flex justify-between text-sm text-base-300 tabular">

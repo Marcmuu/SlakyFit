@@ -167,13 +167,13 @@ export function generateWarmup(workingWeight: number, type: ExerciseType, isFirs
   if (!workingWeight || workingWeight <= 0) return []
   if (type === 'compound-main' && isFirstCompoundOfSession) {
     return [
-      { weight: roundToIncrement(workingWeight * 0.4, 2.5), reps: '8-10', label: 'Aproximación 1' },
-      { weight: roundToIncrement(workingWeight * 0.6, 2.5), reps: '5', label: 'Aproximación 2' },
-      { weight: roundToIncrement(workingWeight * 0.8, 2.5), reps: '2-3', label: 'Aproximación 3' },
+      { weight: roundToIncrement(workingWeight * 0.4, 2.5), reps: '8-10', label: 'Calentamiento 1' },
+      { weight: roundToIncrement(workingWeight * 0.6, 2.5), reps: '5', label: 'Calentamiento 2' },
+      { weight: roundToIncrement(workingWeight * 0.8, 2.5), reps: '2-3', label: 'Calentamiento 3' },
     ]
   }
   if (type === 'compound-main' || type === 'compound-secondary') {
-    return [{ weight: roundToIncrement(workingWeight * 0.6, 2.5), reps: '5-6', label: 'Aproximación' }]
+    return [{ weight: roundToIncrement(workingWeight * 0.6, 2.5), reps: '5-6', label: 'Calentamiento' }]
   }
   return []
 }

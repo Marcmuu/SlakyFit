@@ -81,7 +81,7 @@ export default function ActiveWorkout() {
         <button
           onClick={() => setShowDiscard(true)}
           className="w-9 h-9 flex items-center justify-center rounded-full bg-base-800 text-base-300 shrink-0"
-          aria-label="Cerrar entrenamiento sin guardar"
+          aria-label="Cerrar entreno sin guardar"
         >
           ✕
         </button>
@@ -178,7 +178,7 @@ export default function ActiveWorkout() {
 
       <div className="px-4 mt-6">
         <Button size="lg" className="w-full" onClick={() => setShowFinish(true)}>
-          Finalizar entrenamiento
+          Finalizar entreno
         </Button>
       </div>
 
@@ -186,7 +186,7 @@ export default function ActiveWorkout() {
         <ActionSheet onDismiss={() => setShowFinish(false)}>
           <p className="text-lg font-bold mb-1">¿Terminar aquí?</p>
           <p className="text-sm text-base-400 mb-5">
-            Se guardará el entrenamiento con las series registradas. Si te falta algún ejercicio, usa "+ Añadir ejercicio" antes de finalizar.
+            Se guardará el entreno con las series registradas. Si te falta algún ejercicio, usa "+ Añadir ejercicio" antes de finalizar.
           </p>
           <div className="flex flex-col gap-2.5">
             <Button size="lg" onClick={finish}>
@@ -203,14 +203,14 @@ export default function ActiveWorkout() {
         <ActionSheet onDismiss={() => setShowDiscard(false)}>
           <p className="text-lg font-bold mb-1">¿Cerrar sin guardar?</p>
           <p className="text-sm text-base-400 mb-5">
-            Se perderán todas las series registradas en este entrenamiento. Si quieres seguir más tarde, usa el gesto de deslizar hacia abajo en vez de cerrar.
+            Se perderán todas las series de este entreno. Si quieres seguir más tarde, usa el gesto de deslizar hacia abajo en vez de cerrar.
           </p>
           <div className="flex flex-col gap-2.5">
             <Button variant="danger" size="lg" onClick={discard}>
               Cerrar sin guardar
             </Button>
             <Button variant="secondary" size="lg" onClick={() => setShowDiscard(false)}>
-              Volver al entrenamiento
+              Volver al entreno
             </Button>
           </div>
         </ActionSheet>
