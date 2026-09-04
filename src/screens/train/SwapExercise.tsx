@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { exercises, getExercise } from '../../data/exercises'
+import { getAllExercises, getExercise } from '../../data/exercises'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
+import CreateExerciseSheet from '../../components/CreateExerciseSheet'
 
 export default function SwapExercise() {
   const { index } = useParams()
@@ -14,6 +15,7 @@ export default function SwapExercise() {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const [showLibrary, setShowLibrary] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
 
   const sessionEx = activeWorkout?.exercises[idx]
   const current = sessionEx ? getExercise(sessionEx.exerciseId) : undefined
@@ -22,7 +24,7 @@ export default function SwapExercise() {
 
   const libraryResults = useMemo(() => {
     if (!showLibrary) return []
-    return exercises.filter((e) => e.section === 'main' && e.id !== current?.id && matchesExerciseQuery(e, query)).slice(0, 30)
+    return getAllExercises().filter((e) => e.section === 'main' && e.id !== current?.id && matchesExerciseQuery(e, query)).slice(0, 30)
   }, [query, showLibrary, current])
 
   if (!activeWorkout || !sessionEx || !current) {
@@ -89,9 +91,21 @@ export default function SwapExercise() {
                 </button>
               ))}
             </div>
+            <button onClick={() => setShowCreate(true)} className="text-sm text-brand font-semibold underline underline-offset-2 text-center">
+              ¿No lo encuentras? Créalo
+            </button>
           </>
         )}
       </div>
+      {showCreate && (
+        <CreateExerciseSheet
+          onClose={() => setShowCreate(false)}
+          onCreated={(id) => {
+            setShowCreate(false)
+            pick(id)
+          }}
+        />
+      )}
     </div>
   )
 }

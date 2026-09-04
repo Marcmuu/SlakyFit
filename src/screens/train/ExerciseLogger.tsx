@@ -13,6 +13,7 @@ import RIRSelector from '../../components/RIRSelector'
 import RestTimer from '../../components/RestTimer'
 import Button from '../../components/Button'
 import { formatWeight } from '../../lib/format'
+import { perSideWeight } from '../../lib/plateCalc'
 import { nearestRirRange } from '../../lib/rir'
 import { describeSet } from '../../lib/setFormat'
 import type { RirRange, SetEntry } from '../../types'
@@ -132,14 +133,18 @@ export default function ExerciseLogger() {
             </div>
             {logType === 'weight-reps' && (
               <div>
-                <p className="text-[10px] text-base-500 uppercase mb-0.5">Peso sugerido</p>
+                <p className="text-[10px] text-base-500 uppercase mb-0.5">{lastSavedSet ? 'Última serie' : 'Peso sugerido'}</p>
                 <p className="text-lg font-bold tabular text-brand">
-                  {recommendation?.recommendedWeight ? `${formatWeight(recommendation.recommendedWeight)} kg` : '—'}
+                  {defaultWeight ? `${formatWeight(defaultWeight)} kg` : '—'}
                 </p>
               </div>
             )}
           </div>
-          {recommendation && <p className="text-xs text-base-400 pt-3 border-t border-base-800">{recommendation.message}</p>}
+          <p className="text-xs text-base-400 pt-3 border-t border-base-800">
+            {lastSavedSet
+              ? `Llevas ${sessionEx.sets.length} de ${sessionEx.targetSets} series. Se sugiere repetir el peso de la última.`
+              : recommendation?.message}
+          </p>
         </Card>
 
         {warmup.length > 0 && (
@@ -172,6 +177,12 @@ export default function ExerciseLogger() {
                     keypadDecimals={1}
                     label="Peso"
                   />
+                  {(exercise.equipment === 'barbell' || exercise.equipment === 'smith') && (
+                    <p className="text-xs text-base-500 mt-2">
+                      Peso total (incluye la barra). Con barra de 20 kg:{' '}
+                      {perSideWeight(weight) !== null ? `${perSideWeight(weight)} kg por lado` : 'no llega al peso de la barra'}.
+                    </p>
+                  )}
                 </div>
                 <div>
                   <p className="text-xs text-base-500 mb-2">Repeticiones</p>

@@ -7,4 +7,5 @@ export const equipmentLabels: Record<Equipment, string> = {
   machine: 'Máquina',
   bodyweight: 'Peso corporal',
   smith: 'Smith',
+  plate: 'Disco',
 }

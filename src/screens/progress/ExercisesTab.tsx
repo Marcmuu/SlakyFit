@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { exercises } from '../../data/exercises'
+import { getAllExercises } from '../../data/exercises'
 import { getExerciseHistory, prForExercise, bestE1RMForExercise } from '../../data/progression'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import { formatWeight } from '../../lib/format'
@@ -14,7 +14,7 @@ export default function ExercisesTab() {
   const [query, setQuery] = useState('')
 
   const tracked = useMemo(() => {
-    return exercises
+    return getAllExercises()
       .filter((e) => e.section === 'main')
       .map((e) => ({ exercise: e, history: getExerciseHistory(e.id, sessions) }))
       .filter((t) => t.history.length > 0)

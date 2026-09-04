@@ -1,19 +1,21 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { exercises } from '../../data/exercises'
+import { getAllExercises } from '../../data/exercises'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
+import CreateExerciseSheet from '../../components/CreateExerciseSheet'
 
 export default function AddExercise() {
   const { activeWorkout, setActiveWorkout } = useAppStore()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
 
   const results = useMemo(() => {
-    return exercises
+    return getAllExercises()
       .filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query))
       .slice(0, 40)
   }, [query])
@@ -21,7 +23,7 @@ export default function AddExercise() {
   if (!activeWorkout) return null
 
   function add(exerciseId: string) {
-    const exercise = exercises.find((e) => e.id === exerciseId)
+    const exercise = getAllExercises().find((e) => e.id === exerciseId)
     const isAbs = exercise?.section === 'abs'
     const isTime = exercise?.logType === 'time'
     const next = {
@@ -63,7 +65,19 @@ export default function AddExercise() {
             </button>
           ))}
         </div>
+        <button onClick={() => setShowCreate(true)} className="text-sm text-brand font-semibold underline underline-offset-2 text-center">
+          ¿No lo encuentras? Créalo
+        </button>
       </div>
+      {showCreate && (
+        <CreateExerciseSheet
+          onClose={() => setShowCreate(false)}
+          onCreated={(id) => {
+            setShowCreate(false)
+            add(id)
+          }}
+        />
+      )}
     </div>
   )
 }

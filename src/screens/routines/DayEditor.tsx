@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { exercises, getExercise } from '../../data/exercises'
+import { getAllExercises, getExercise } from '../../data/exercises'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { newId } from '../../lib/id'
@@ -9,6 +9,7 @@ import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
 import Stepper from '../../components/Stepper'
+import CreateExerciseSheet from '../../components/CreateExerciseSheet'
 import type { RoutineDayExercise } from '../../types'
 
 export default function DayEditor() {
@@ -21,10 +22,11 @@ export default function DayEditor() {
   const [expandedSlotId, setExpandedSlotId] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   const [showPicker, setShowPicker] = useState(false)
+  const [showCreate, setShowCreate] = useState(false)
 
   const searchResults = useMemo(() => {
     if (!showPicker) return []
-    return exercises.filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query)).slice(0, 30)
+    return getAllExercises().filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query)).slice(0, 30)
   }, [query, showPicker])
 
   if (!routine || !day) {
@@ -202,10 +204,23 @@ export default function DayEditor() {
                 </button>
               ))}
             </div>
+            <button onClick={() => setShowCreate(true)} className="text-sm text-brand font-semibold underline underline-offset-2 text-center">
+              ¿No lo encuentras? Créalo
+            </button>
             <Button variant="ghost" onClick={() => setShowPicker(false)}>
               Cancelar
             </Button>
           </div>
+        )}
+
+        {showCreate && (
+          <CreateExerciseSheet
+            onClose={() => setShowCreate(false)}
+            onCreated={(id) => {
+              setShowCreate(false)
+              addExercise(id)
+            }}
+          />
         )}
 
         <Button size="lg" className="w-full" onClick={() => navigate(`/routines/${routine.id}`)}>

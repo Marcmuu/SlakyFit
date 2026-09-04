@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
-import { exercises, getExercise } from '../../data/exercises'
+import { getAllExercises, getExercise } from '../../data/exercises'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { newId } from '../../lib/id'
@@ -91,7 +91,7 @@ export default function SessionEditor() {
 
   const searchResults = useMemo(() => {
     if (!showPicker) return []
-    return exercises.filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query)).slice(0, 30)
+    return getAllExercises().filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, query)).slice(0, 30)
   }, [query, showPicker])
 
   if (sessionId && !existing) {

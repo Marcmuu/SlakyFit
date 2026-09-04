@@ -5,6 +5,7 @@ import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { formatDayLabel, formatWeight } from '../lib/format'
 import { describeSet } from '../lib/setFormat'
 import ExerciseMedia, { youtubeSearchUrl } from './ExerciseMedia'
+import GymPhotoCard from './GymPhotoCard'
 import Card from './Card'
 import type { Exercise } from '../types'
 
@@ -57,6 +58,8 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
             </svg>
             Ver técnica en YouTube
           </a>
+
+          <GymPhotoCard exerciseId={exercise.id} />
 
           <div className="flex flex-wrap gap-2">
             {exercise.mainMuscles.map((m) => (

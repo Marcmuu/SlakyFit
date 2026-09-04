@@ -7,6 +7,7 @@ import { formatDayLabel, formatWeight } from '../../lib/format'
 import { describeSet, effectiveWeight, effectiveReps } from '../../lib/setFormat'
 import PageHeader from '../../components/PageHeader'
 import ExerciseMedia, { youtubeSearchUrl } from '../../components/ExerciseMedia'
+import GymPhotoCard from '../../components/GymPhotoCard'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
 import TrendLineChart from '../../components/charts/TrendLineChart'
@@ -86,6 +87,8 @@ export default function ExerciseDetail() {
           </svg>
           Ver técnica en YouTube
         </a>
+
+        <GymPhotoCard exerciseId={exercise.id} />
 
         <div className="flex flex-wrap gap-2">
           {exercise.mainMuscles.map((m) => (

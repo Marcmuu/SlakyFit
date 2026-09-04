@@ -35,6 +35,8 @@ export const STORAGE_KEYS = {
   routinesMigratedV1: 'routines-migrated-v1',
   rirMigratedV1: 'rir-migrated-v1',
   activities: 'activities',
+  gymPhotos: 'gymPhotos',
+  customExercises: 'customExercises',
 } as const
 
 const EXPORT_FORMAT = 'slakyfit-backup'
@@ -73,6 +75,8 @@ export function resetLocalDataForNewAccount(): void {
   saveItem(STORAGE_KEYS.bodyMetrics, [])
   saveItem(STORAGE_KEYS.activities, [])
   saveItem(STORAGE_KEYS.profile, { name: '', age: 0, heightCm: 0, weightKg: 0, experience: '' })
+  saveItem(STORAGE_KEYS.gymPhotos, {})
+  saveItem(STORAGE_KEYS.customExercises, [])
 }
 
 export function importAllData(payload: unknown): void {

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../data/store'
 import { newId } from '../../lib/id'
 import { todayIso } from '../../lib/format'
-import { exercises, getExercise } from '../../data/exercises'
+import { getAllExercises, getExercise } from '../../data/exercises'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { fetchStarterRoutineBlueprints, instantiateStarterRoutine } from '../../data/starterRoutines'
@@ -13,6 +13,7 @@ import type { DayCategory } from '../../data/dayCatalog'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
+import CreateExerciseSheet from '../../components/CreateExerciseSheet'
 import type { Routine } from '../../types'
 
 const WEEKDAYS = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
@@ -40,6 +41,7 @@ export default function RoutineWizard() {
   const [pickingCategory, setPickingCategory] = useState<DayCategory | null>(null)
   const [customBuilder, setCustomBuilder] = useState<{ name: string; items: BlueprintItem[] } | null>(null)
   const [customQuery, setCustomQuery] = useState('')
+  const [showCreateExercise, setShowCreateExercise] = useState(false)
 
   useEffect(() => {
     fetchStarterRoutineBlueprints().then(setBlueprints)
@@ -144,7 +146,7 @@ export default function RoutineWizard() {
 
   const customSearchResults = useMemo(() => {
     if (!customBuilder) return []
-    return exercises.filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, customQuery)).slice(0, 30)
+    return getAllExercises().filter((e) => (e.section === 'main' || e.section === 'abs') && matchesExerciseQuery(e, customQuery)).slice(0, 30)
   }, [customBuilder, customQuery])
 
   function confirmByDayPlan() {
@@ -332,6 +334,9 @@ export default function RoutineWizard() {
                   </button>
                 ))}
               </div>
+              <button onClick={() => setShowCreateExercise(true)} className="text-sm text-brand font-semibold underline underline-offset-2 text-center">
+                ¿No lo encuentras? Créalo
+              </button>
 
               <Button size="lg" className="w-full" onClick={saveCustomDay} disabled={customBuilder.items.length === 0}>
                 Guardar día
@@ -339,6 +344,16 @@ export default function RoutineWizard() {
             </>
           )}
         </div>
+
+        {showCreateExercise && (
+          <CreateExerciseSheet
+            onClose={() => setShowCreateExercise(false)}
+            onCreated={(id) => {
+              setShowCreateExercise(false)
+              addCustomExercise(id)
+            }}
+          />
+        )}
       </div>
     )
   }

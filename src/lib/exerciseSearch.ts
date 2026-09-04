@@ -15,6 +15,11 @@ const MUSCLE_SYNONYMS: Record<string, string[]> = {
   antebrazo: ['antebrazo', 'antebrazos', 'forearm'],
 }
 
+const SHARED_MUSCLE_SYNONYMS: Record<string, string[]> = {
+  biceps: ['brazo', 'brazos'],
+  triceps: ['brazo', 'brazos'],
+}
+
 function normalize(text: string): string {
   return text
     .normalize('NFD')
@@ -23,11 +28,15 @@ function normalize(text: string): string {
     .trim()
 }
 
-// Matches at the start of the whole string or the start of any word inside it,
-// so short queries like "ab" find "Abducción..." but not "por la cabeza".
+// Matches palabra por palabra: cada palabra de la búsqueda debe ser prefijo de
+// alguna palabra del texto (en cualquier orden), así "press banca" encuentra
+// "Press banca con barra" y "press militar" encuentra sus variantes, no solo
+// búsquedas de una palabra como "ab" -> "Abducción...".
 function prefixMatches(haystack: string, query: string): boolean {
-  const norm = normalize(haystack)
-  return norm.split(/[^a-z0-9]+/).some((word) => word.startsWith(query))
+  const haystackWords = normalize(haystack).split(/[^a-z0-9]+/).filter(Boolean)
+  const queryWords = query.split(/\s+/).filter(Boolean)
+  if (queryWords.length === 0) return true
+  return queryWords.every((qw) => haystackWords.some((word) => word.startsWith(qw)))
 }
 
 function aliasMatches(query: string, aliases: string[]): boolean {
@@ -48,6 +57,8 @@ export function matchesExerciseQuery(exercise: Exercise, rawQuery: string): bool
     if (prefixMatches(muscle, query)) return true
     const synonyms = MUSCLE_SYNONYMS[muscle]
     if (synonyms && aliasMatches(query, synonyms)) return true
+    const shared = SHARED_MUSCLE_SYNONYMS[muscle]
+    if (shared && aliasMatches(query, shared)) return true
   }
 
   return false

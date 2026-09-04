@@ -5,7 +5,7 @@ export type ExerciseType = 'compound-main' | 'compound-secondary' | 'isolation'
 
 export type ExerciseLogType = 'weight-reps' | 'bodyweight-reps' | 'time'
 
-export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'smith'
+export type Equipment = 'barbell' | 'dumbbell' | 'machine' | 'cable' | 'bodyweight' | 'smith' | 'plate'
 
 export type Muscle =
   | 'pecho'

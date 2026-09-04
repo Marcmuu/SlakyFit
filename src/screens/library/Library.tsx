@@ -1,23 +1,25 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { exercises } from '../../data/exercises'
+import { getAllExercises } from '../../data/exercises'
 import PageHeader from '../../components/PageHeader'
 import Card from '../../components/Card'
+import CreateExerciseSheet from '../../components/CreateExerciseSheet'
 import { equipmentLabels } from '../../lib/equipmentLabels'
 import { matchesExerciseQuery } from '../../lib/exerciseSearch'
 import type { Muscle, Equipment } from '../../types'
 
 const muscles: Muscle[] = ['pecho', 'espalda', 'hombro', 'biceps', 'triceps', 'cuadriceps', 'isquios', 'gluteo', 'gemelos', 'core']
-const equipmentOptions: Equipment[] = ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'smith']
+const equipmentOptions: Equipment[] = ['barbell', 'dumbbell', 'cable', 'machine', 'bodyweight', 'smith', 'plate']
 
 export default function Library() {
   const navigate = useNavigate()
   const [muscle, setMuscle] = useState<Muscle | null>(null)
   const [equipment, setEquipment] = useState<Equipment | null>(null)
   const [query, setQuery] = useState('')
+  const [showCreate, setShowCreate] = useState(false)
 
   const results = useMemo(() => {
-    return exercises.filter(
+    return getAllExercises().filter(
       (e) =>
         (e.section === 'main' || e.section === 'abs') &&
         (!muscle || e.mainMuscles.includes(muscle)) &&
@@ -79,7 +81,20 @@ export default function Library() {
           ))}
           {results.length === 0 && <p className="text-center text-base-500 py-8 text-sm">No hay ejercicios con estos filtros.</p>}
         </div>
+
+        <button onClick={() => setShowCreate(true)} className="text-sm text-brand font-semibold underline underline-offset-2 text-center py-2">
+          ¿No lo encuentras? Créalo
+        </button>
       </div>
+      {showCreate && (
+        <CreateExerciseSheet
+          onClose={() => setShowCreate(false)}
+          onCreated={(id) => {
+            setShowCreate(false)
+            navigate(`/library/${id}`)
+          }}
+        />
+      )}
     </div>
   )
 }
