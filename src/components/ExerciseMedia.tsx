@@ -21,13 +21,13 @@ export default function ExerciseMedia({ exercise, compact = false }: { exercise:
               setFrame((f) => (f + 1) % images!.length)
             }
           }}
-          className={`relative w-full rounded-2xl overflow-hidden bg-base-950 border border-base-800 cursor-pointer ${compact ? 'h-28' : ''}`}
+          className={`relative w-full rounded-2xl overflow-hidden bg-base-950 border border-base-800 cursor-pointer ${compact ? 'h-16' : ''}`}
           style={compact ? undefined : { paddingBottom: '75%' }}
         >
           <img
             src={images![frame]}
             alt={exercise.name}
-            className={compact ? 'w-full h-full object-cover' : 'absolute inset-0 w-full h-full object-contain'}
+            className={compact ? 'w-full h-full object-contain' : 'absolute inset-0 w-full h-full object-contain'}
             loading="lazy"
             onError={() => setBroken(true)}
           />

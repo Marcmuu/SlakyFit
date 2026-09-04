@@ -99,11 +99,11 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
   }
 
   if (!supabase) return <>{children}</>
-  if (!authReady) return <div className="min-h-screen bg-base-950" />
+  if (!authReady) return <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-base-950" />
   if (user && !needsChoice && !checkingCloud) return <>{children}</>
 
   return (
-    <div className="min-h-screen bg-base-950 text-base-100 flex flex-col items-center justify-center px-6 relative overflow-hidden">
+    <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-base-950 text-base-100 flex flex-col items-center justify-center px-6 relative overflow-hidden">
       <div
         className="absolute inset-0 opacity-[0.07] pointer-events-none"
         style={{ backgroundImage: 'radial-gradient(circle, #c4ff3d 1px, transparent 1px)', backgroundSize: '22px 22px' }}

@@ -37,6 +37,20 @@ export const routineLists: RoutineList[] = [
     exerciseIds: ['crunch-polea', 'crunch-maquina', 'oblicuo-polea'],
   },
   {
+    id: 'abs-dinamico',
+    name: 'Core dinámico',
+    section: 'abs',
+    durationLabel: '8 min',
+    exerciseIds: ['escaladores', 'crunch-bicicleta', 'plancha-lateral'],
+  },
+  {
+    id: 'abs-suelo',
+    name: 'ABS en el suelo (sin material)',
+    section: 'abs',
+    durationLabel: '8 min',
+    exerciseIds: ['plancha', 'crunch-bicicleta', 'elevacion-piernas-tumbado', 'plancha-lateral'],
+  },
+  {
     id: 'movilidad-antes-push',
     name: 'Antes de Push',
     section: 'mobility',
@@ -66,6 +80,20 @@ export const routineLists: RoutineList[] = [
     section: 'mobility',
     durationLabel: '10 min',
     exerciseIds: ['movilidad-hombro-circulos', 'movilidad-toracica', 'movilidad-cadera-90-90', 'movilidad-tobillo', 'movilidad-columna-gato-camello'],
+  },
+  {
+    id: 'movilidad-tren-superior',
+    name: 'Movilidad tren superior',
+    section: 'mobility',
+    durationLabel: '6 min',
+    exerciseIds: ['movilidad-hombro-circulos', 'movilidad-hombro-manguito', 'movilidad-muneca-antebrazo'],
+  },
+  {
+    id: 'movilidad-cadera-completa',
+    name: 'Movilidad de cadera completa',
+    section: 'mobility',
+    durationLabel: '6 min',
+    exerciseIds: ['movilidad-cadera-90-90', 'movilidad-isquios-bisagra'],
   },
   {
     id: 'flex-cuerpo-completo',
@@ -101,6 +129,27 @@ export const routineLists: RoutineList[] = [
     section: 'flexibility',
     durationLabel: '6 min',
     exerciseIds: ['estiramiento-isquios-pie', 'estiramiento-pecho-puerta', 'estiramiento-gluteo-figura4'],
+  },
+  {
+    id: 'flex-brazos',
+    name: 'Brazos',
+    section: 'flexibility',
+    durationLabel: '5 min',
+    exerciseIds: ['estiramiento-triceps-overhead', 'estiramiento-biceps-pared'],
+  },
+  {
+    id: 'flex-tren-superior',
+    name: 'Tren superior completo',
+    section: 'flexibility',
+    durationLabel: '8 min',
+    exerciseIds: ['estiramiento-pecho-puerta', 'estiramiento-hombro-cruzado', 'estiramiento-triceps-overhead', 'estiramiento-biceps-pared'],
+  },
+  {
+    id: 'flex-gemelos-pies',
+    name: 'Gemelos y pies',
+    section: 'flexibility',
+    durationLabel: '4 min',
+    exerciseIds: ['estiramiento-gemelos-pared'],
   },
 ]
 

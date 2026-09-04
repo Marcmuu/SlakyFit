@@ -69,8 +69,8 @@ export default function App() {
   const isFullscreen = FULLSCREEN_PREFIXES.some((p) => location.pathname.startsWith(p))
 
   return (
-    <div className="min-h-screen bg-base-950 text-base-100">
-      <div className={`max-w-md mx-auto min-h-screen relative ${isFullscreen ? '' : 'pb-24'}`}>
+    <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-base-950 text-base-100">
+      <div className={`max-w-md mx-auto min-h-screen supports-[height:100dvh]:min-h-[100dvh] relative ${isFullscreen ? '' : 'pb-24'}`}>
         {isFullscreen && <FullscreenDragHandle />}
         <Suspense fallback={<div className="p-4 text-base-400 text-sm">Cargando…</div>}>
           <Routes>

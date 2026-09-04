@@ -1,7 +1,7 @@
 export default function MediaPlaceholder({ label, compact = false }: { label: string; compact?: boolean }) {
   return (
     <div
-      className={`relative w-full rounded-2xl bg-gradient-to-br from-base-800 to-base-900 border border-base-800 overflow-hidden ${compact ? 'h-28' : ''}`}
+      className={`relative w-full rounded-2xl bg-gradient-to-br from-base-800 to-base-900 border border-base-800 overflow-hidden ${compact ? 'h-16' : ''}`}
       style={compact ? undefined : { paddingBottom: '75%' }}
     >
       <div className="absolute inset-0 opacity-[0.06]" style={{ backgroundImage: 'radial-gradient(circle, #c4ff3d 1px, transparent 1px)', backgroundSize: '14px 14px' }} />

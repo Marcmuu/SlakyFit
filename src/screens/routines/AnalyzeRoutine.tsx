@@ -50,14 +50,6 @@ export default function AnalyzeRoutine() {
     <div className="pb-8">
       <PageHeader title="Analizar rutina" subtitle={routine.name} onBack />
       <div className="px-4 flex flex-col gap-4">
-        <Card>
-          <p className="text-xs text-base-500 mb-1">Cómo leer esto</p>
-          <p className="text-sm text-base-300">
-            Reglas simples aplicadas a tu rutina y a lo que ya has registrado — sin IA de por medio. Úsalo como punto de partida, no como
-            veredicto.
-          </p>
-        </Card>
-
         <button onClick={() => navigate('/routines/ai-export')} className="text-left">
           <Card className="active:bg-base-800 !border-brand/40 !bg-brand/5">
             <p className="text-sm font-bold text-brand mb-1">Analizar a fondo con IA</p>

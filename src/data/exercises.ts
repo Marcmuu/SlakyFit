@@ -155,19 +155,26 @@ export const exercises: Exercise[] = [
   ex('gemelo-de-pie', 'Gemelo de pie', ['gemelos'], 'Flexión plantar', 'machine', 'isolation', ['gemelos-maquina', 'gemelos-prensa']),
 
   // ---------- ABS ----------
-  ex('plancha', 'Plancha frontal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs', defaultDurationSec: 40, logType: 'time' }),
-  ex('crunch-polea', 'Crunch en polea', ['core'], 'Flexión de tronco', 'cable', 'isolation', [], { section: 'abs' }),
-  ex('elevacion-piernas-colgado', 'Elevación de piernas colgado', ['core'], 'Flexión de cadera', 'bodyweight', 'isolation', [], { section: 'abs', logType: 'bodyweight-reps' }),
-  ex('rueda-abdominal', 'Rueda abdominal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', [], { section: 'abs', logType: 'bodyweight-reps' }),
-  ex('crunch-maquina', 'Crunch en máquina', ['core'], 'Flexión de tronco', 'machine', 'isolation', [], { section: 'abs' }),
-  ex('oblicuo-polea', 'Oblicuo en polea (leñador)', ['core'], 'Rotación de tronco', 'cable', 'isolation', [], { section: 'abs' }),
+  ex('plancha', 'Plancha frontal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', ['plancha-lateral'], { section: 'abs', defaultDurationSec: 40, logType: 'time' }),
+  ex('crunch-polea', 'Crunch en polea', ['core'], 'Flexión de tronco', 'cable', 'isolation', ['crunch-maquina', 'crunch-bicicleta'], { section: 'abs' }),
+  ex('elevacion-piernas-colgado', 'Elevación de piernas colgado', ['core'], 'Flexión de cadera', 'bodyweight', 'isolation', ['elevacion-piernas-tumbado'], { section: 'abs', logType: 'bodyweight-reps' }),
+  ex('rueda-abdominal', 'Rueda abdominal', ['core'], 'Anti-extensión', 'bodyweight', 'isolation', ['plancha'], { section: 'abs', logType: 'bodyweight-reps' }),
+  ex('crunch-maquina', 'Crunch en máquina', ['core'], 'Flexión de tronco', 'machine', 'isolation', ['crunch-polea', 'crunch-bicicleta'], { section: 'abs' }),
+  ex('oblicuo-polea', 'Oblicuo en polea (leñador)', ['core'], 'Rotación de tronco', 'cable', 'isolation', ['plancha-lateral'], { section: 'abs' }),
+  ex('plancha-lateral', 'Plancha lateral', ['core'], 'Anti-flexión lateral', 'bodyweight', 'isolation', ['plancha', 'oblicuo-polea'], { section: 'abs', defaultDurationSec: 30, logType: 'time' }),
+  ex('crunch-bicicleta', 'Crunch bicicleta', ['core'], 'Rotación de tronco', 'bodyweight', 'isolation', ['oblicuo-polea'], { section: 'abs', logType: 'bodyweight-reps' }),
+  ex('elevacion-piernas-tumbado', 'Elevación de piernas tumbado', ['core'], 'Flexión de cadera', 'bodyweight', 'isolation', ['elevacion-piernas-colgado'], { section: 'abs', logType: 'bodyweight-reps' }),
+  ex('escaladores', 'Escaladores (mountain climbers)', ['core'], 'Flexión de cadera dinámica', 'bodyweight', 'isolation', ['plancha'], { section: 'abs', defaultDurationSec: 30, logType: 'time' }),
 
   // ---------- MOVILIDAD ----------
-  ex('movilidad-hombro-circulos', 'Círculos de hombro con banda', ['hombro'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 45 }),
-  ex('movilidad-toracica', 'Rotación torácica en cuadrupedia', ['espalda'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 45 }),
-  ex('movilidad-cadera-90-90', 'Movilidad de cadera 90/90', ['gluteo'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 60 }),
+  ex('movilidad-hombro-circulos', 'Círculos de hombro con banda', ['hombro'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-hombro-manguito'], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-toracica', 'Rotación torácica en cuadrupedia', ['espalda'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-columna-gato-camello'], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-cadera-90-90', 'Movilidad de cadera 90/90', ['gluteo'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-isquios-bisagra'], { section: 'mobility', defaultDurationSec: 60 }),
   ex('movilidad-tobillo', 'Movilidad de tobillo en pared', ['gemelos'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 45 }),
-  ex('movilidad-columna-gato-camello', 'Gato-camello', ['espalda'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-columna-gato-camello', 'Gato-camello', ['espalda'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-toracica'], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-hombro-manguito', 'Rotación externa de hombro con banda', ['hombro'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-hombro-circulos'], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-isquios-bisagra', 'Bisagra de cadera con banda', ['isquios'], 'Movilidad', 'bodyweight', 'isolation', ['movilidad-cadera-90-90'], { section: 'mobility', defaultDurationSec: 45 }),
+  ex('movilidad-muneca-antebrazo', 'Movilidad de muñeca y antebrazo', ['antebrazo'], 'Movilidad', 'bodyweight', 'isolation', [], { section: 'mobility', defaultDurationSec: 30 }),
 
   // ---------- FLEXIBILIDAD ----------
   ex('estiramiento-pecho-puerta', 'Estiramiento de pecho en marco de puerta', ['pecho'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
@@ -176,6 +183,10 @@ export const exercises: Exercise[] = [
   ex('estiramiento-gluteo-figura4', 'Estiramiento de glúteo (figura 4)', ['gluteo'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
   ex('estiramiento-flexor-cadera', 'Estiramiento de flexor de cadera', ['gluteo'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
   ex('estiramiento-dorsal-colgado', 'Estiramiento de dorsal colgado', ['espalda'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
+  ex('estiramiento-gemelos-pared', 'Estiramiento de gemelos en pared', ['gemelos'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
+  ex('estiramiento-hombro-cruzado', 'Estiramiento de hombro cruzado', ['hombro'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
+  ex('estiramiento-triceps-overhead', 'Estiramiento de tríceps por encima de la cabeza', ['triceps'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
+  ex('estiramiento-biceps-pared', 'Estiramiento de bíceps en pared', ['biceps'], 'Estiramiento', 'bodyweight', 'isolation', [], { section: 'flexibility', defaultDurationSec: 30 }),
 ]
 
 for (const exercise of exercises) {

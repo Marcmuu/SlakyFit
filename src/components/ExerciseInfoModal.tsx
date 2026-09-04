@@ -91,7 +91,7 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
               <p className="text-sm font-bold mb-3">Historial</p>
               <div className="flex flex-col gap-3">
                 {visibleHistory.map((h, i) => (
-                  <div key={h.date} className={i > 0 ? 'pt-3 border-t border-base-800' : ''}>
+                  <div key={`${h.date}-${i}`} className={i > 0 ? 'pt-3 border-t border-base-800' : ''}>
                     <p className="text-xs text-base-500 mb-1.5">{formatDayLabel(h.date)}</p>
                     <div className="flex flex-col gap-1">
                       {h.sets.map((s, si) => (
