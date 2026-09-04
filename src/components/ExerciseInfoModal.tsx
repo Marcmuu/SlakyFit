@@ -4,7 +4,7 @@ import { bestSet, prForExercise, bestE1RMForExercise, getExerciseHistory } from 
 import { useBodyScrollLock } from '../lib/useBodyScrollLock'
 import { formatDayLabel, formatWeight } from '../lib/format'
 import { describeSet } from '../lib/setFormat'
-import ExerciseMedia, { youtubeSearchUrl } from './ExerciseMedia'
+import ExerciseMedia from './ExerciseMedia'
 import GymPhotoCard from './GymPhotoCard'
 import Card from './Card'
 import type { Exercise } from '../types'
@@ -46,18 +46,6 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
 
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 py-4 flex flex-col gap-4 safe-bottom">
           <ExerciseMedia exercise={exercise} />
-
-          <a
-            href={youtubeSearchUrl(exercise.name)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 h-11 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 5 12 5 12 5s-6 0-7.7.3a2.7 2.7 0 0 0-1.9 1.9A28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6 19 12 19 12 19s6 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8ZM10 15.5v-7L15.5 12Z" />
-            </svg>
-            Ver técnica en YouTube
-          </a>
 
           <GymPhotoCard exerciseId={exercise.id} />
 

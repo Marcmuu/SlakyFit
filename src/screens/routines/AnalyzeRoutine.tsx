@@ -20,6 +20,9 @@ export default function AnalyzeRoutine() {
             <p className="text-base-400 mb-4">Todavía no tienes ninguna rutina que analizar.</p>
             <Button onClick={() => navigate('/routines')}>Crear una rutina</Button>
           </Card>
+          <button onClick={() => navigate('/routines/ai-export')} className="text-sm text-brand font-semibold underline underline-offset-2 text-center block w-full mt-4">
+            O pide a una IA que te proponga una a partir de tu perfil
+          </button>
         </div>
       </div>
     )
@@ -54,6 +57,15 @@ export default function AnalyzeRoutine() {
             veredicto.
           </p>
         </Card>
+
+        <button onClick={() => navigate('/routines/ai-export')} className="text-left">
+          <Card className="active:bg-base-800 !border-brand/40 !bg-brand/5">
+            <p className="text-sm font-bold text-brand mb-1">Analizar a fondo con IA</p>
+            <p className="text-xs text-base-400">
+              Exporta tu rutina, historial y objetivos listos para pegar en ChatGPT o Claude, y trae de vuelta sus sugerencias.
+            </p>
+          </Card>
+        </button>
 
         <Card>
           <p className="text-sm font-bold mb-1">Series por músculo (un ciclo completo)</p>

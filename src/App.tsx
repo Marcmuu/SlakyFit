@@ -27,6 +27,8 @@ const RoutineWizard = lazy(() => import('./screens/routines/RoutineWizard'))
 const RoutineEditor = lazy(() => import('./screens/routines/RoutineEditor'))
 const DayEditor = lazy(() => import('./screens/routines/DayEditor'))
 const AnalyzeRoutine = lazy(() => import('./screens/routines/AnalyzeRoutine'))
+const AiExport = lazy(() => import('./screens/routines/AiExport'))
+const AiImport = lazy(() => import('./screens/routines/AiImport'))
 const SessionEditor = lazy(() => import('./screens/calendar/SessionEditor'))
 const ActivityEditor = lazy(() => import('./screens/calendar/ActivityEditor'))
 
@@ -92,6 +94,8 @@ export default function App() {
             <Route path="/routines/:routineId" element={<RoutineEditor />} />
             <Route path="/routines/:routineId/day/:dayId" element={<DayEditor />} />
             <Route path="/routines/analyze" element={<AnalyzeRoutine />} />
+            <Route path="/routines/ai-export" element={<AiExport />} />
+            <Route path="/routines/ai-import" element={<AiImport />} />
             <Route path="/more" element={<More />} />
             <Route path="/more/section/:section" element={<RoutineListScreen />} />
             <Route path="/more/routine/:id" element={<RoutineListDetail />} />

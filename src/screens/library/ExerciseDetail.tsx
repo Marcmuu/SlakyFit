@@ -6,7 +6,7 @@ import { getExerciseHistory, bestSet, bestE1RMForExercise, prForExercise, comput
 import { formatDayLabel, formatWeight } from '../../lib/format'
 import { describeSet, effectiveWeight, effectiveReps } from '../../lib/setFormat'
 import PageHeader from '../../components/PageHeader'
-import ExerciseMedia, { youtubeSearchUrl } from '../../components/ExerciseMedia'
+import ExerciseMedia from '../../components/ExerciseMedia'
 import GymPhotoCard from '../../components/GymPhotoCard'
 import Card from '../../components/Card'
 import Button from '../../components/Button'
@@ -75,18 +75,6 @@ export default function ExerciseDetail() {
       <PageHeader title={exercise.name} onBack />
       <div className="px-4 flex flex-col gap-4">
         <ExerciseMedia exercise={exercise} />
-
-        <a
-          href={youtubeSearchUrl(exercise.name)}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 h-11 rounded-xl bg-base-800 border border-base-700 text-sm font-semibold text-base-200 active:bg-base-700"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M21.6 7.2a2.7 2.7 0 0 0-1.9-1.9C18 5 12 5 12 5s-6 0-7.7.3a2.7 2.7 0 0 0-1.9 1.9A28 28 0 0 0 2 12a28 28 0 0 0 .4 4.8 2.7 2.7 0 0 0 1.9 1.9C6 19 12 19 12 19s6 0 7.7-.3a2.7 2.7 0 0 0 1.9-1.9A28 28 0 0 0 22 12a28 28 0 0 0-.4-4.8ZM10 15.5v-7L15.5 12Z" />
-          </svg>
-          Ver técnica en YouTube
-        </a>
 
         <GymPhotoCard exerciseId={exercise.id} />
 
