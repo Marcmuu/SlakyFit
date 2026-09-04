@@ -108,12 +108,14 @@ export function recommendNextWeight(
 
   const weights = last.sets.map((s) => effectiveWeight(exercise, s))
   const reps = last.sets.map((s) => effectiveReps(s))
-  const rirMidpoints = last.sets.map((s) => RIR_MIDPOINT[s.rir])
+  const rirMidpoints = last.sets.map((s) => s.rir).filter((r): r is NonNullable<typeof r> => r !== undefined).map((r) => RIR_MIDPOINT[r])
   const lastWeight = weights[weights.length - 1]
   const allAtTop = reps.every((r) => r >= repMax)
   const allBelowMin = reps.every((r) => r < repMin)
   const allNearFailure = last.sets.every((s) => s.rir === '0-1')
-  const avgRir = rirMidpoints.reduce((a, b) => a + b, 0) / rirMidpoints.length
+  // Si no se registró RIR en ninguna serie, se asume que iba dentro del
+  // objetivo (ni muy fácil ni al fallo) en vez de dividir por cero.
+  const avgRir = rirMidpoints.length > 0 ? rirMidpoints.reduce((a, b) => a + b, 0) / rirMidpoints.length : rirTargetMin
 
   if (allAtTop && !allNearFailure && avgRir >= rirTargetMin - 1) {
     return {

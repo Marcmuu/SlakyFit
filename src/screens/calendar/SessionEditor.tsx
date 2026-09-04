@@ -18,9 +18,9 @@ import { describeSet } from '../../lib/setFormat'
 import type { Exercise, RoutineDay, SessionExercise, SetEntry, WorkoutSession } from '../../types'
 
 function defaultSet(exercise: Exercise): SetEntry {
-  if (exercise.logType === 'time') return { durationSec: exercise.defaultDurationSec ?? 30, rir: '2-3' }
-  if (exercise.logType === 'bodyweight-reps') return { reps: 8, rir: '2-3' }
-  return { weight: 20, reps: 8, rir: '2-3' }
+  if (exercise.logType === 'time') return { durationSec: exercise.defaultDurationSec ?? 30 }
+  if (exercise.logType === 'bodyweight-reps') return { reps: 8 }
+  return { weight: 20, reps: 8 }
 }
 
 function exercisesFromDay(day: RoutineDay): SessionExercise[] {
@@ -289,7 +289,7 @@ export default function SessionEditor() {
                           >
                             <span className="text-base-500 shrink-0">Serie {setIndex + 1}</span>
                             <span className="font-semibold text-base-100 tabular flex-1 text-right">
-                              {describeSet(exercise, set)} · RIR {set.rir}
+                              {describeSet(exercise, set)} · RIR {set.rir ?? '—'}
                             </span>
                           </button>
                           {expanded && (

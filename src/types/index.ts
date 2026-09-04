@@ -40,6 +40,7 @@ export interface Exercise {
   defaultDurationSec?: number
   comparisonGroup?: string
   externalImages?: string[]
+  barWeightKg?: number
 }
 
 export interface RoutineList {
@@ -74,7 +75,7 @@ export interface SetEntry {
   extraWeight?: number
   reps?: number
   durationSec?: number
-  rir: RirRange
+  rir?: RirRange
   isWarmup?: boolean
 }
 

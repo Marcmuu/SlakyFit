@@ -110,7 +110,7 @@ export default function ExerciseInfoModal({ exercise, onClose }: { exercise: Exe
                         <div key={si} className="flex items-center justify-between text-sm tabular gap-2">
                           <span className="text-base-500 shrink-0">Serie {si + 1}</span>
                           <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
-                          <span className="text-base-400 text-xs shrink-0">RIR {s.rir}</span>
+                          <span className="text-base-400 text-xs shrink-0">RIR {s.rir ?? '—'}</span>
                         </div>
                       ))}
                     </div>

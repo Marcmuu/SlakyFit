@@ -7,7 +7,7 @@ const options: { value: RirRange; label: string }[] = [
   { value: '3+', label: '3+' },
 ]
 
-export default function RIRSelector({ value, onChange }: { value: RirRange; onChange: (v: RirRange) => void }) {
+export default function RIRSelector({ value, onChange }: { value: RirRange | undefined; onChange: (v: RirRange) => void }) {
   return (
     <div className="flex gap-2">
       {options.map((opt) => (

@@ -85,7 +85,7 @@ export const exercises: Exercise[] = [
   ex('press-declinado-maquina', 'Press declinado / máquina', ['pecho', 'triceps'], 'Empuje horizontal descendente', 'machine', 'compound-main', ['fondos-pecho', 'fondos-asistidos']),
   ex('fondos-banco', 'Fondos en banco (tríceps)', ['triceps', 'pecho'], 'Extensión de codo', 'bodyweight', 'compound-secondary', ['fondos-pecho', 'extension-triceps-polea'], { logType: 'bodyweight-reps' }),
 
-  ex('press-frances-ez', 'Press francés con barra EZ', ['triceps'], 'Extensión de codo overhead', 'barbell', 'isolation', ['extension-overhead-polea', 'extension-overhead-mancuerna']),
+  ex('press-frances-ez', 'Press francés con barra EZ', ['triceps'], 'Extensión de codo overhead', 'barbell', 'isolation', ['extension-overhead-polea', 'extension-overhead-mancuerna'], { barWeightKg: 10 }),
   ex('extension-overhead-polea', 'Extensión overhead en polea', ['triceps'], 'Extensión de codo overhead', 'cable', 'isolation', ['press-frances-ez', 'extension-overhead-mancuerna']),
   ex('extension-overhead-mancuerna', 'Extensión overhead con mancuerna', ['triceps'], 'Extensión de codo overhead', 'dumbbell', 'isolation', ['press-frances-ez', 'extension-overhead-polea']),
 
@@ -108,8 +108,8 @@ export const exercises: Exercise[] = [
   ex('remo-mancuerna', 'Remo con mancuerna', ['espalda', 'biceps'], 'Tracción horizontal', 'dumbbell', 'compound-main', ['remo-sentado-polea', 'remo-maquina']),
   ex('remo-barra', 'Remo con barra', ['espalda', 'biceps'], 'Tracción horizontal', 'barbell', 'compound-main', ['remo-t', 'remo-mancuerna']),
 
-  ex('curl-ez-pie', 'Curl con barra EZ de pie', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-barra-recta', 'curl-polea', 'curl-maquina']),
-  ex('curl-barra-recta', 'Curl con barra recta', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-ez-pie', 'curl-polea', 'curl-maquina']),
+  ex('curl-ez-pie', 'Curl con barra EZ de pie', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-barra-recta', 'curl-polea', 'curl-maquina'], { barWeightKg: 10 }),
+  ex('curl-barra-recta', 'Curl con barra recta', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-ez-pie', 'curl-polea', 'curl-maquina'], { barWeightKg: 10 }),
   ex('curl-polea', 'Curl en polea', ['biceps'], 'Flexión de codo', 'cable', 'isolation', ['curl-ez-pie', 'curl-barra-recta', 'curl-maquina']),
   ex('curl-maquina', 'Curl de bíceps en máquina', ['biceps'], 'Flexión de codo', 'machine', 'isolation', ['curl-ez-pie', 'curl-barra-recta', 'curl-polea']),
 
@@ -128,7 +128,7 @@ export const exercises: Exercise[] = [
 
   ex('curl-inclinado-mancuernas', 'Curl inclinado con mancuernas', ['biceps'], 'Flexión de codo en estiramiento', 'dumbbell', 'isolation', ['curl-bayesian-polea', 'curl-predicador']),
   ex('curl-bayesian-polea', 'Curl Bayesian en polea', ['biceps'], 'Flexión de codo en estiramiento', 'cable', 'isolation', ['curl-inclinado-mancuernas', 'curl-predicador']),
-  ex('curl-predicador', 'Curl predicador', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-inclinado-mancuernas', 'curl-bayesian-polea']),
+  ex('curl-predicador', 'Curl predicador', ['biceps'], 'Flexión de codo', 'barbell', 'isolation', ['curl-inclinado-mancuernas', 'curl-bayesian-polea'], { barWeightKg: 10 }),
 
   // ---------- LEGS ----------
   ex('sentadilla', 'Sentadilla con barra', ['cuadriceps', 'gluteo'], 'Sentadilla', 'barbell', 'compound-main', ['hack-squat', 'prensa', 'sentadilla-smith', 'sentadilla-goblet'], { comparisonGroup: 'rodilla-dominante' }),

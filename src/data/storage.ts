@@ -37,6 +37,7 @@ export const STORAGE_KEYS = {
   activities: 'activities',
   gymPhotos: 'gymPhotos',
   customExercises: 'customExercises',
+  barWeights: 'barWeights',
 } as const
 
 const EXPORT_FORMAT = 'slakyfit-backup'
@@ -77,6 +78,7 @@ export function resetLocalDataForNewAccount(): void {
   saveItem(STORAGE_KEYS.profile, { name: '', age: 0, heightCm: 0, weightKg: 0, experience: '' })
   saveItem(STORAGE_KEYS.gymPhotos, {})
   saveItem(STORAGE_KEYS.customExercises, [])
+  saveItem(STORAGE_KEYS.barWeights, {})
 }
 
 export function importAllData(payload: unknown): void {

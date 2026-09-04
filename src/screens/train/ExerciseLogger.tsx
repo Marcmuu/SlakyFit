@@ -12,9 +12,10 @@ import Stepper from '../../components/Stepper'
 import RIRSelector from '../../components/RIRSelector'
 import RestTimer from '../../components/RestTimer'
 import Button from '../../components/Button'
+import NumericKeypad from '../../components/NumericKeypad'
 import { formatWeight } from '../../lib/format'
-import { perSideWeight } from '../../lib/plateCalc'
-import { nearestRirRange } from '../../lib/rir'
+import { perSideWeight, STANDARD_BAR_KG } from '../../lib/plateCalc'
+import { getBarWeightOverride, setBarWeightOverride } from '../../data/barWeights'
 import { describeSet } from '../../lib/setFormat'
 import type { RirRange, SetEntry } from '../../types'
 
@@ -54,14 +55,18 @@ export default function ExerciseLogger() {
   const defaultReps = lastSavedSet ? lastSavedSet.reps ?? 8 : lastSet?.reps ?? sessionEx?.repMin ?? 8
   const defaultExtraWeight = lastSavedSet ? lastSavedSet.extraWeight ?? 0 : lastSet?.extraWeight ?? 0
   const defaultDurationSec = lastSavedSet ? lastSavedSet.durationSec ?? 30 : lastSet?.durationSec ?? exercise?.defaultDurationSec ?? 30
-  const defaultRir: RirRange = lastSavedSet ? lastSavedSet.rir : nearestRirRange(rirTarget ? (rirTarget[0] + rirTarget[1]) / 2 : 2)
+  // El RIR no viene preseleccionado — solo se rellena solo si ya se registró
+  // una serie de este ejercicio en esta misma sesión.
+  const defaultRir: RirRange | undefined = lastSavedSet?.rir
 
   const [weight, setWeight] = useState(defaultWeight)
   const [reps, setReps] = useState(defaultReps)
   const [extraWeight, setExtraWeight] = useState(defaultExtraWeight)
   const [durationSec, setDurationSec] = useState(defaultDurationSec)
-  const [rir, setRir] = useState<RirRange>(defaultRir)
+  const [rir, setRir] = useState<RirRange | undefined>(defaultRir)
   const [restTrigger, setRestTrigger] = useState(0)
+  const [barWeight, setBarWeight] = useState(() => (exercise ? getBarWeightOverride(exercise.id) ?? exercise.barWeightKg ?? STANDARD_BAR_KG : STANDARD_BAR_KG))
+  const [barKeypadOpen, setBarKeypadOpen] = useState(false)
 
   if (!activeWorkout || !sessionEx || !exercise) {
     return (
@@ -179,8 +184,16 @@ export default function ExerciseLogger() {
                   />
                   {(exercise.equipment === 'barbell' || exercise.equipment === 'smith') && (
                     <p className="text-xs text-base-500 mt-2">
-                      Peso total (incluye la barra). Con barra de 20 kg:{' '}
-                      {perSideWeight(weight) !== null ? `${perSideWeight(weight)} kg por lado` : 'no llega al peso de la barra'}.
+                      Peso total (incluye la barra de {formatWeight(barWeight)} kg).{' '}
+                      {(() => {
+                        const perSide = perSideWeight(weight, barWeight)
+                        if (perSide === null) return 'No llega al peso de la barra.'
+                        if (perSide === 0) return 'Es solo el peso de la barra, sin discos.'
+                        return `${formatWeight(perSide)} kg por lado.`
+                      })()}{' '}
+                      <button onClick={() => setBarKeypadOpen(true)} className="text-brand font-semibold underline underline-offset-2">
+                        Cambiar barra
+                      </button>
                     </p>
                   )}
                 </div>
@@ -235,7 +248,7 @@ export default function ExerciseLogger() {
                 <div key={i} className="py-2 flex items-center justify-between text-sm tabular gap-2">
                   <span className="text-base-500 shrink-0">Serie {i + 1}</span>
                   <span className="font-semibold text-base-100 flex-1 text-right">{describeSet(exercise, s)}</span>
-                  <span className="text-base-400 shrink-0">RIR {s.rir}</span>
+                  <span className="text-base-400 shrink-0">RIR {s.rir ?? '—'}</span>
                 </div>
               ))}
             </div>
@@ -245,6 +258,22 @@ export default function ExerciseLogger() {
           </Card>
         )}
       </div>
+
+      <NumericKeypad
+        open={barKeypadOpen}
+        initialValue={barWeight}
+        decimals={1}
+        suffix="kg"
+        min={0}
+        max={100}
+        title="Peso de la barra"
+        onCancel={() => setBarKeypadOpen(false)}
+        onConfirm={(v) => {
+          setBarWeight(v)
+          setBarWeightOverride(exercise.id, v)
+          setBarKeypadOpen(false)
+        }}
+      />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-const STANDARD_BAR_KG = 20
+export const STANDARD_BAR_KG = 20
 
 // El peso que registra el usuario es siempre el TOTAL (norma ya usada en todo
 // el cálculo de e1RM/progresión) — esto es solo una ayuda visual para saber
