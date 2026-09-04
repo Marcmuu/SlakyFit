@@ -65,6 +65,7 @@ export default function AiExport() {
             <li>Pégalo en ChatGPT, Claude o Gemini.</li>
             <li>Copia la respuesta completa de la IA (análisis + el bloque de código al final).</li>
             <li>Vuelve aquí y pulsa "Importar la respuesta".</li>
+            <li>Se guarda como una rutina nueva — no toca las que ya tienes.</li>
           </ol>
         </Card>
 
@@ -76,9 +77,23 @@ export default function AiExport() {
         </Button>
         {copyError && <p className="text-xs text-accent-push text-center">{copyError}</p>}
 
-        <Button variant="ghost" size="lg" className="w-full" onClick={() => navigate('/routines/ai-import')}>
-          Ya tengo la respuesta de la IA → Importar
-        </Button>
+        <div className="flex items-center gap-3 my-1">
+          <div className="h-px flex-1 bg-base-800" />
+          <p className="text-xs text-base-500 uppercase tracking-wide shrink-0">Cuando tengas la respuesta</p>
+          <div className="h-px flex-1 bg-base-800" />
+        </div>
+
+        <button onClick={() => navigate('/routines/ai-import')} className="text-left">
+          <Card className="active:bg-base-800 !border-brand/50 !bg-brand/5">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <p className="font-bold text-brand">Importar la respuesta de la IA</p>
+                <p className="text-xs text-base-400 mt-0.5">Pega lo que te devolvió y crea la rutina propuesta con un toque.</p>
+              </div>
+              <span className="text-2xl text-brand shrink-0">›</span>
+            </div>
+          </Card>
+        </button>
       </div>
     </div>
   )

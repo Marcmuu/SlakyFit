@@ -29,7 +29,10 @@ export default function AiImport() {
     if (!preview) return
     const routine = applyAiRoutineProposal(preview)
     addRoutine(routine)
-    navigate(`/routines/${routine.id}`)
+    // replace, no push: si el usuario pulsa "atrás" desde aquí no tiene
+    // sentido volver a la pantalla de pegar/importar — mejor que aterrice en
+    // Mis rutinas, donde ya puede ver y activar la que se acaba de crear.
+    navigate('/routines', { replace: true })
   }
 
   return (
@@ -86,6 +89,9 @@ export default function AiImport() {
               </Card>
             ))}
 
+            <p className="text-xs text-base-500 text-center">
+              Esto crea una rutina nueva independiente — tus rutinas actuales no se tocan. Podrás activarla desde "Mis rutinas" cuando quieras.
+            </p>
             <Button size="lg" className="w-full" onClick={save}>
               Guardar como nueva rutina
             </Button>
