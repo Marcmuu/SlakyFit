@@ -14,8 +14,10 @@ import RestTimer from '../../components/RestTimer'
 import Button from '../../components/Button'
 import NumericKeypad from '../../components/NumericKeypad'
 import { formatWeight } from '../../lib/format'
-import { perSideWeight, STANDARD_BAR_KG } from '../../lib/plateCalc'
+import { toTotalWeight, fromTotalWeight, STANDARD_BAR_KG } from '../../lib/plateCalc'
+import type { WeightEntryMode } from '../../lib/plateCalc'
 import { getBarWeightOverride, setBarWeightOverride } from '../../data/barWeights'
+import { getWeightEntryMode, setWeightEntryMode } from '../../data/weightEntryMode'
 import { describeSet } from '../../lib/setFormat'
 import type { RirRange, SetEntry } from '../../types'
 
@@ -50,8 +52,14 @@ export default function ExerciseLogger() {
       : []
 
   const lastSavedSet = sessionEx?.sets[sessionEx.sets.length - 1]
+  const isBarExercise = exercise?.equipment === 'barbell' || exercise?.equipment === 'smith'
 
-  const defaultWeight = lastSavedSet ? lastSavedSet.weight ?? 20 : recommendation?.recommendedWeight ?? lastSet?.weight ?? 20
+  const initialBarWeight = exercise ? getBarWeightOverride(exercise.id) ?? exercise.barWeightKg ?? STANDARD_BAR_KG : STANDARD_BAR_KG
+  const initialEntryMode: WeightEntryMode = exercise ? getWeightEntryMode(exercise.id) : 'total'
+
+  // defaultTotalWeight siempre está en peso total (así es como se guarda el
+  // historial); se convierte al modo actual solo para mostrarlo/editarlo.
+  const defaultTotalWeight = lastSavedSet ? lastSavedSet.weight ?? 20 : recommendation?.recommendedWeight ?? lastSet?.weight ?? 20
   const defaultReps = lastSavedSet ? lastSavedSet.reps ?? 8 : lastSet?.reps ?? sessionEx?.repMin ?? 8
   const defaultExtraWeight = lastSavedSet ? lastSavedSet.extraWeight ?? 0 : lastSet?.extraWeight ?? 0
   const defaultDurationSec = lastSavedSet ? lastSavedSet.durationSec ?? 30 : lastSet?.durationSec ?? exercise?.defaultDurationSec ?? 30
@@ -59,14 +67,29 @@ export default function ExerciseLogger() {
   // una serie de este ejercicio en esta misma sesión.
   const defaultRir: RirRange | undefined = lastSavedSet?.rir
 
-  const [weight, setWeight] = useState(defaultWeight)
+  const [weight, setWeight] = useState(() => fromTotalWeight(defaultTotalWeight, initialEntryMode, initialBarWeight))
   const [reps, setReps] = useState(defaultReps)
   const [extraWeight, setExtraWeight] = useState(defaultExtraWeight)
   const [durationSec, setDurationSec] = useState(defaultDurationSec)
   const [rir, setRir] = useState<RirRange | undefined>(defaultRir)
   const [restTrigger, setRestTrigger] = useState(0)
-  const [barWeight, setBarWeight] = useState(() => (exercise ? getBarWeightOverride(exercise.id) ?? exercise.barWeightKg ?? STANDARD_BAR_KG : STANDARD_BAR_KG))
+  const [barWeight, setBarWeight] = useState(initialBarWeight)
+  const [entryMode, setEntryMode] = useState<WeightEntryMode>(initialEntryMode)
   const [barKeypadOpen, setBarKeypadOpen] = useState(false)
+
+  function formatDisplayWeight(totalKg: number): string {
+    if (!isBarExercise) return `${formatWeight(totalKg)} kg`
+    const converted = fromTotalWeight(totalKg, entryMode, barWeight)
+    return entryMode === 'perSide' ? `${formatWeight(converted)} kg/lado` : `${formatWeight(converted)} kg`
+  }
+
+  function changeEntryMode(mode: WeightEntryMode) {
+    if (mode === entryMode || !exercise) return
+    const total = toTotalWeight(weight, entryMode, barWeight)
+    setWeight(fromTotalWeight(total, mode, barWeight))
+    setEntryMode(mode)
+    setWeightEntryMode(exercise.id, mode)
+  }
 
   if (!activeWorkout || !sessionEx || !exercise) {
     return (
@@ -83,7 +106,7 @@ export default function ExerciseLogger() {
         ? { durationSec, rir }
         : logType === 'bodyweight-reps'
           ? { reps, extraWeight: extraWeight || undefined, rir }
-          : { weight, reps, rir }
+          : { weight: toTotalWeight(weight, entryMode, barWeight), reps, rir }
     const exercises = [...activeWorkout!.exercises]
     exercises[idx] = { ...exercises[idx], sets: [...exercises[idx].sets, entry] }
     setActiveWorkout({ ...activeWorkout!, exercises })
@@ -140,7 +163,7 @@ export default function ExerciseLogger() {
               <div>
                 <p className="text-[10px] text-base-500 uppercase mb-0.5">{lastSavedSet ? 'Última serie' : 'Peso sugerido'}</p>
                 <p className="text-lg font-bold tabular text-brand">
-                  {defaultWeight ? `${formatWeight(defaultWeight)} kg` : '—'}
+                  {defaultTotalWeight ? formatDisplayWeight(defaultTotalWeight) : '—'}
                 </p>
               </div>
             )}
@@ -159,7 +182,7 @@ export default function ExerciseLogger() {
               {warmup.map((w, i) => (
                 <div key={i} className="flex justify-between text-sm text-base-300 tabular">
                   <span>{w.label}</span>
-                  <span>{formatWeight(w.weight)} kg × {w.reps}</span>
+                  <span>{formatDisplayWeight(w.weight)} × {w.reps}</span>
                 </div>
               ))}
             </div>
@@ -182,19 +205,39 @@ export default function ExerciseLogger() {
                     keypadDecimals={1}
                     label="Peso"
                   />
-                  {(exercise.equipment === 'barbell' || exercise.equipment === 'smith') && (
-                    <p className="text-xs text-base-500 mt-2">
-                      Peso total (incluye la barra de {formatWeight(barWeight)} kg).{' '}
-                      {(() => {
-                        const perSide = perSideWeight(weight, barWeight)
-                        if (perSide === null) return 'No llega al peso de la barra.'
-                        if (perSide === 0) return 'Es solo el peso de la barra, sin discos.'
-                        return `${formatWeight(perSide)} kg por lado.`
-                      })()}{' '}
-                      <button onClick={() => setBarKeypadOpen(true)} className="text-brand font-semibold underline underline-offset-2">
-                        Cambiar barra
-                      </button>
-                    </p>
+                  {isBarExercise && (
+                    <div className="mt-2 flex flex-col gap-1.5">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => changeEntryMode('total')}
+                          className={`flex-1 h-8 rounded-lg text-xs font-semibold border ${
+                            entryMode === 'total' ? 'bg-brand text-base-950 border-brand' : 'border-base-700 text-base-300'
+                          }`}
+                        >
+                          Peso total
+                        </button>
+                        <button
+                          onClick={() => changeEntryMode('perSide')}
+                          className={`flex-1 h-8 rounded-lg text-xs font-semibold border ${
+                            entryMode === 'perSide' ? 'bg-brand text-base-950 border-brand' : 'border-base-700 text-base-300'
+                          }`}
+                        >
+                          Solo un lado
+                        </button>
+                      </div>
+                      <p className="text-xs text-base-500">
+                        Barra de {formatWeight(barWeight)} kg.{' '}
+                        {entryMode === 'total'
+                          ? (() => {
+                              const perSide = fromTotalWeight(weight, 'perSide', barWeight)
+                              return weight < barWeight ? 'No llega al peso de la barra.' : `${formatWeight(perSide)} kg por lado.`
+                            })()
+                          : `${formatWeight(toTotalWeight(weight, 'perSide', barWeight))} kg en total.`}{' '}
+                        <button onClick={() => setBarKeypadOpen(true)} className="text-brand font-semibold underline underline-offset-2">
+                          Cambiar barra
+                        </button>
+                      </p>
+                    </div>
                   )}
                 </div>
                 <div>
