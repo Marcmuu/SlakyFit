@@ -98,9 +98,17 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Justo tras iniciar sesión, `user` pasa a tener valor en el mismo render en
+  // el que `checkingCloud` todavía es `false` (el useEffect que lo pone a
+  // `true` corre un tick después) — sin esto, ese único render de más deja
+  // pasar la app real con localStorage todavía vacío/desactualizado, tiempo
+  // suficiente para que el Dashboard redirija al asistente de rutina antes de
+  // que la copia en la nube termine de aplicarse y recargue la página.
+  const cloudCheckPending = !!user && !needsChoice && !isUserResolved(user.id)
+
   if (!supabase) return <>{children}</>
   if (!authReady) return <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-base-950" />
-  if (user && !needsChoice && !checkingCloud) return <>{children}</>
+  if (user && !needsChoice && !checkingCloud && !cloudCheckPending) return <>{children}</>
 
   return (
     <div className="min-h-screen supports-[height:100dvh]:min-h-[100dvh] bg-base-950 text-base-100 flex flex-col items-center justify-center px-6 relative overflow-hidden">
@@ -114,7 +122,7 @@ export default function AuthGate({ children }: { children: React.ReactNode }) {
         </div>
         <h1 className="text-2xl font-extrabold tracking-tight mb-1">SlakyFit</h1>
         <p className="text-sm text-base-400 mb-8 text-center">
-          {checkingCloud ? 'Comprobando tu cuenta…' : 'Inicia sesión para continuar'}
+          {checkingCloud || cloudCheckPending ? 'Comprobando tu cuenta…' : 'Inicia sesión para continuar'}
         </p>
 
         {!user && !checkingCloud && (
